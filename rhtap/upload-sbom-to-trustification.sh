@@ -4,16 +4,51 @@ set -o errexit -o nounset -o pipefail
 # Return zero matches when a glob doesn't match rather than returning the glob itself
 shopt -s nullglob
 
+# Upload an SBOM file to Trustification [1] using the BOMbastic [2] API.
+#
+# [1]: https://github.com/trustification/trustification
+# [2]: https://github.com/trustification/trustification/tree/main/bombastic
+#
+# ## Configuration
+#
+# This script requires some configuration and authentication secrets. The script takes
+# them from TRUSTIFICATION_* environment variables.
+#
+# Required variables:
+# - TRUSTIFICATION_BOMBASTIC_API_URL: URL of the BOMbastic api host (e.g. https://sbom.trustification.dev)
+# - TRUSTIFICATION_OIDC_ISSUER_URL: URL of the OIDC token issuer (e.g. https://sso.trustification.dev/realms/chicken)
+# - TRUSTIFICATION_OIDC_CLIENT_ID: OIDC client ID
+# - TRUSTIFICATION_OIDC_CLIENT_SECRET: OIDC client secret
+#
+# Optional variables:
+# - TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION: If the SBOM uses a higher CycloneDX version,
+#     `syft convert` to the supported version before uploading.
+
+# Set defaults for unset optional variables
+: "${SBOMS_DIR=./.sboms}"
+: "${HTTP_RETRIES=3}"
+: "${FAIL_IF_TRUSTIFICATION_NOT_CONFIGURED=true}"
+# Trustification config
+: "${TRUSTIFICATION_BOMBASTIC_API_URL=}"
+: "${TRUSTIFICATION_OIDC_ISSUER_URL=}"
+: "${TRUSTIFICATION_OIDC_CLIENT_ID=}"
+: "${TRUSTIFICATION_OIDC_CLIENT_SECRET=}"
+: "${TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION=}"
+
+# Set script-local variables
+WORKDIR=$(mktemp -d --tmpdir "upload-sbom-workdir.XXXXXX")
+trap 'rm -r "$WORKDIR"' EXIT
+
 version_lesser_equal() {
     local first
     first="$(printf "%s\n%s" "$1" "$2" | sort --version-sort | head -n 1)"
     [ "$1" = "$first" ]
 }
 
-if [[ -f "$TRUSTIFICATION_SECRET_PATH/supported_cyclonedx_version" ]]; then
-    supported_version="$(cat "$TRUSTIFICATION_SECRET_PATH/supported_cyclonedx_version")"
+if [[ -n "$TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION" ]]; then
+    supported_version=$TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION
 else
-    echo "The '$TRUSTIFICATION_SECRET_NAME' secret does not set supported_cyclonedx_version, will not check SBOM versions"
+    echo "TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION not set, will not check SBOM versions"
     supported_version=""
 fi
 
@@ -80,28 +115,33 @@ if [[ "${#sboms_to_upload[@]}" -eq 0 ]]; then
     exit 0
 fi
 
-read_required_secret_key() {
-    local key="$1"
-    if [[ -f "$TRUSTIFICATION_SECRET_PATH/$key" ]]; then
-        cat "$TRUSTIFICATION_SECRET_PATH/$key"
-    else
-        echo "Missing configuration: $key" >&2
-        echo "Does the '$TRUSTIFICATION_SECRET_NAME' secret exist in your namespace and contain the required keys?" >&2
-        echo "Refer to the description of this Task for details." >&2
-
-        if [[ "$FAIL_IF_TRUSTIFICATION_NOT_CONFIGURED" == "false" ]]; then
-            echo "WARNING: FAIL_IF_TRUSTIFICATION_NOT_CONFIGURED=false; exiting with success" >&2
-            exit 0
-        else
-            exit 1
-        fi
+required_vars=(
+    TRUSTIFICATION_BOMBASTIC_API_URL
+    TRUSTIFICATION_OIDC_ISSUER_URL
+    TRUSTIFICATION_OIDC_CLIENT_ID
+    TRUSTIFICATION_OIDC_CLIENT_SECRET
+)
+any_missing=false
+for env_var in "${required_vars[@]}"; do
+    if [[ -z "${!env_var}" ]]; then
+        echo "Missing environment variable: $env_var" >&2
+        any_missing=true
     fi
-}
+done
 
-bombastic_api_url="$(read_required_secret_key bombastic_api_url)"
-oidc_issuer_url="$(read_required_secret_key oidc_issuer_url)"
-oidc_client_id="$(read_required_secret_key oidc_client_id)"
-oidc_client_secret="$(read_required_secret_key oidc_client_secret)"
+if [[ $any_missing == true ]]; then
+    if [[ "$FAIL_IF_TRUSTIFICATION_NOT_CONFIGURED" == "false" ]]; then
+        echo "WARNING: FAIL_IF_TRUSTIFICATION_NOT_CONFIGURED=false; exiting with success" >&2
+        exit 0
+    else
+        exit 1
+    fi
+fi
+
+bombastic_api_url=$TRUSTIFICATION_BOMBASTIC_API_URL
+oidc_issuer_url=$TRUSTIFICATION_OIDC_ISSUER_URL
+oidc_client_id=$TRUSTIFICATION_OIDC_CLIENT_ID
+oidc_client_secret=$TRUSTIFICATION_OIDC_CLIENT_SECRET
 
 curl_opts=(--silent --show-error --fail-with-body --retry "$HTTP_RETRIES")
 
