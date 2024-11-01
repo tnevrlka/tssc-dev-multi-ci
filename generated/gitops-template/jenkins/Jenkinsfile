@@ -32,6 +32,8 @@ pipeline {
                     rhtap.gather_images_to_upload_sbom()
                     rhtap.info('download_sbom_from_url_in_attestation')
                     rhtap.download_sbom_from_url_in_attestation()
+                    rhtap.info('upload_sbom_to_trustification')
+                    rhtap.upload_sbom_to_trustification()
                 }
             }
         }

@@ -29,7 +29,7 @@ gitops_steps:
   - name: Verify EC
     substeps: [gather-deploy-images, verify-enterprise-contract]
   - name: Upload SBOM
-    substeps: [gather-images-to-upload-sbom, download-sbom-from-url-in-attestation]
+    substeps: [gather-images-to-upload-sbom, download-sbom-from-url-in-attestation, upload-sbom-to-trustification]
 
 gitops_secrets:
   - name: COSIGN_PUBLIC_KEY
