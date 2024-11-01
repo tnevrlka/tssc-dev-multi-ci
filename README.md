@@ -89,6 +89,12 @@ Assuming that `QUAY_IO_CREDS_USR`, `QUAY_IO_CREDS_PSW` and `MY_QUAY_USER` enviro
 
 ```
 export REKOR_HOST='' TUF_MIRROR=''
+
+# if you have an RHTAP instance deployed including TPA
+eval "$(hack/get-trustification-env.sh)"
+# otherwise
+# export FAIL_IF_TRUSTIFICATION_NOT_CONFIGURED=false
+
 (bash build-pipeline.sh && export MY_IMAGES_TO_VERIFY=$(hack/show-image-ref) && bash promote-pipeline.sh) | tee log.out
 ```
 
@@ -132,6 +138,10 @@ The library requires some secrets to be defined in your Jenkins cluster
 
 There are utility scripts in the hack directory which allow automated setting of the Jenkins Secrets. You will need local env vars, and your Jenkins access token configured. Run the script and it will tell you what you are missing.
 It will set the credentials required for the Jenkins pipeline to work.
+
+If you have an RHTAP instance deployed including TPA, run this before running the `jenkins-set-secrets`
+script: `eval "$(hack/get-trustification-env.sh)"`. This will set `TRUSTIFICATION_*` environment
+variables for you, which `jenkins-set-secrets` will then deploy to your Jenkins instance.
 
 To set the secrets, run `hack/jenkins-set-secrets`
 To validate secrets are set  run `hack/jenkins-get-secrets`
