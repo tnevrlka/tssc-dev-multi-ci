@@ -143,7 +143,14 @@ oidc_issuer_url=$TRUSTIFICATION_OIDC_ISSUER_URL
 oidc_client_id=$TRUSTIFICATION_OIDC_CLIENT_ID
 oidc_client_secret=$TRUSTIFICATION_OIDC_CLIENT_SECRET
 
-curl_opts=(--silent --show-error --fail-with-body --retry "$HTTP_RETRIES")
+curl_version=$(curl --version | sed -n -E 's/^curl (\S+).*/\1/p')
+if version_lesser_equal 7.76.0 "$curl_version"; then
+    # --fail-with-body was introduced in curl 7.76.0
+    fail_opt=--fail-with-body
+else
+    fail_opt=--fail
+fi
+curl_opts=(--silent --show-error "$fail_opt" --retry "$HTTP_RETRIES")
 
 # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig
 openid_configuration_url="${oidc_issuer_url%/}/.well-known/openid-configuration"
