@@ -24,6 +24,10 @@ shopt -s nullglob
 # - TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION: If the SBOM uses a higher CycloneDX version,
 #     `syft convert` to the supported version before uploading.
 
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
+# shellcheck source=rhtap/common.sh
+source "$SCRIPTDIR"/common.sh
+
 # Set defaults for unset optional variables
 : "${SBOMS_DIR=./.sboms}"
 : "${HTTP_RETRIES=3}"
