@@ -8,9 +8,6 @@
 
 name: TSSC-Build-Attest-Scan-Deploy
 env:
-  {#-
-    Todo: Use the secret list in data/data.yaml here
-  #}
   CI_TYPE: github
 
   # 🖊️ EDIT to change the image registry settings.
@@ -18,16 +15,12 @@ env:
   IMAGE_REGISTRY: ${{ "secrets.IMAGE_REGISTRY" | inCurlies }}
   IMAGE_REGISTRY_USER: ${{ "secrets.IMAGE_REGISTRY_USER" | inCurlies }}
   IMAGE_REGISTRY_PASSWORD: ${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}
-
-  ROX_CENTRAL_ENDPOINT: ${{ "secrets.ROX_CENTRAL_ENDPOINT" | inCurlies }}
-  ROX_API_TOKEN: ${{ "secrets.ROX_API_TOKEN" | inCurlies }}
-
-  QUAY_IO_CREDS_USR: ${{ "secrets.QUAY_IO_CREDS_USR" | inCurlies }}
-  QUAY_IO_CREDS_PSW: ${{ "secrets.QUAY_IO_CREDS_PSW" | inCurlies }}
-  COSIGN_SECRET_PASSWORD: ${{ "secrets.COSIGN_SECRET_PASSWORD" | inCurlies }}
-  COSIGN_SECRET_KEY: ${{ "secrets.COSIGN_SECRET_KEY" | inCurlies }}
-  COSIGN_PUBLIC_KEY: ${{ "secrets.COSIGN_PUBLIC_KEY" | inCurlies }}
-  GITOPS_AUTH_PASSWORD: ${{ "secrets.GITOPS_AUTH_PASSWORD" | inCurlies }}
+{% for secret in build_secrets %}
+{%- if secret.comment %}
+  # {{ secret.comment }}
+{%- endif %}
+  {% if secret.commented_out %}# {% endif %}{{ secret.name }}: ${{ ("secrets." + secret.name) | inCurlies }}
+{%- endfor %}
 
   # 🖊️ EDIT to specify custom tags for the container image, or default tags will be generated below.
   IMAGE_TAGS: ""
@@ -59,18 +52,12 @@ jobs:
             IMAGE_REGISTRY: `${{ "secrets.IMAGE_REGISTRY" | inCurlies }}`,
             IMAGE_REGISTRY_USER: `${{ "secrets.IMAGE_REGISTRY_USER" | inCurlies }}`,
             IMAGE_REGISTRY_PASSWORD: `${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}`,
-
-            ROX_CENTRAL_ENDPOINT: `${{ "secrets.ROX_CENTRAL_ENDPOINT" | inCurlies }}`,
-            ROX_API_TOKEN: `${{ "secrets.ROX_API_TOKEN" | inCurlies }}`,
-
-            QUAY_IO_CREDS_USR: `${{ "secrets.QUAY_IO_CREDS_USR" | inCurlies }}`,
-            QUAY_IO_CREDS_PSW: `${{ "secrets.QUAY_IO_CREDS_PSW" | inCurlies }}`,
-
-            COSIGN_SECRET_PASSWORD: `${{ "secrets.COSIGN_SECRET_PASSWORD" | inCurlies }}`,
-            COSIGN_SECRET_KEY: `${{ "secrets.COSIGN_SECRET_KEY" | inCurlies }}`,
-            COSIGN_PUBLIC_KEY: `${{ "secrets.COSIGN_PUBLIC_KEY" | inCurlies }}`,
-
-            GITOPS_AUTH_PASSWORD: `${{ "secrets.GITOPS_AUTH_PASSWORD" | inCurlies }}`,
+{% for secret in build_secrets %}
+{%- if secret.comment %}
+            # {{ secret.comment }}
+{%- endif %}
+            {% if secret.commented_out %}# {% endif %}{{ secret.name }}: `${{ ("secrets." + secret.name) | inCurlies }}`,
+{%- endfor %}
 
           };
           const missingSecrets = Object.entries(secrets).filter(([ name, value ]) => {
