@@ -28,11 +28,24 @@ TEST_GITOPS_GITLAB_REPO=https://gitlab.com/$TEST_REPO_GITLAB_ORG/tssc-dev-gitops
 TEST_BUILD_JENKINS_REPO=https://github.com/$TEST_REPO_ORG/tssc-dev-source-jenkins
 TEST_GITOPS_JENKINS_REPO=https://github.com/$TEST_REPO_ORG/tssc-dev-gitops-jenkins
 
+# If you prefer to use ssh git urls
+if [ -n "$USE_SSH_GIT_URLS" ]; then
+    TEST_BUILD_REPO_SSH=git@github.com:$TEST_REPO_ORG/devfile-sample-nodejs-dance.git
+    TEST_GITOPS_REPO_SSH=git@github.com:$TEST_REPO_ORG/tssc-dev-gitops.git
+    TEST_BUILD_GITLAB_REPO_SSH=git@gitlab.com:$TEST_REPO_GITLAB_ORG/devfile-sample-nodejs-dance.git
+    TEST_GITOPS_GITLAB_REPO_SSH=git@gitlab.com:$TEST_REPO_GITLAB_ORG/tssc-dev-gitops.git
+    TEST_BUILD_JENKINS_REPO_SSH=git@github.com:$TEST_REPO_ORG/tssc-dev-source-jenkins.git
+    TEST_GITOPS_JENKINS_REPO_SSH=git@github.com:$TEST_REPO_ORG/tssc-dev-gitops-jenkins.git
+fi
+
 function cloneIfRepoExists() {
     REPO=$1
-    DEST=$2
+    REPO_HTTPS=$2
+    # $REPO and $REPO_HTTPS are the same unless $USE_SSH_GIT_URLS is set
+    DEST=$3
+    echo "Test repo $REPO and clone into $DEST"
 
-    REPO_EXISTS=$(curl -s -o /dev/null -I -w "%{http_code}" $REPO)
+    REPO_EXISTS=$(curl -s -o /dev/null -I -w "%{http_code}" $REPO_HTTPS)
     # 200 == exists
     # 404 == does not exist
     if [ $REPO_EXISTS == 200 ]; then
@@ -56,13 +69,12 @@ GITLAB_GITOPS=$TMP_REPOS/gitlab-gitops
 JENKINS_BUILD=$TMP_REPOS/jenkins-build
 JENKINS_GITOPS=$TMP_REPOS/jenkins-gitops
 
-cloneIfRepoExists $TEST_BUILD_REPO $BUILD
-cloneIfRepoExists $TEST_GITOPS_REPO $GITOPS
-cloneIfRepoExists $TEST_BUILD_GITLAB_REPO $GITLAB_BUILD
-cloneIfRepoExists $TEST_GITOPS_GITLAB_REPO $GITLAB_GITOPS
-
-cloneIfRepoExists $TEST_BUILD_JENKINS_REPO $JENKINS_BUILD
-cloneIfRepoExists $TEST_GITOPS_JENKINS_REPO $JENKINS_GITOPS
+cloneIfRepoExists ${TEST_BUILD_REPO_SSH:-$TEST_BUILD_REPO} $TEST_BUILD_REPO $BUILD
+cloneIfRepoExists ${TEST_GITOPS_REPO_SSH:-$TEST_GITOPS_REPO} $TEST_GITOPS_REPO $GITOPS
+cloneIfRepoExists ${TEST_BUILD_GITLAB_REPO_SSH:-$TEST_BUILD_GITLAB_REPO} $TEST_BUILD_GITLAB_REPO $GITLAB_BUILD
+cloneIfRepoExists ${TEST_GITOPS_GITLAB_REPO_SSH:-$TEST_GITOPS_GITLAB_REPO} $TEST_GITOPS_GITLAB_REPO $GITLAB_GITOPS
+cloneIfRepoExists ${TEST_BUILD_JENKINS_REPO_SSH:-$TEST_BUILD_JENKINS_REPO} $TEST_BUILD_JENKINS_REPO $JENKINS_BUILD
+cloneIfRepoExists ${TEST_GITOPS_JENKINS_REPO_SSH:-$TEST_GITOPS_JENKINS_REPO} $TEST_GITOPS_JENKINS_REPO $JENKINS_GITOPS
 
 # WARNING - if GITOPS_REPO_URL is set, update deployment will try to update
 # the gitops repo. Disable this here if the gitops repo is NOT a fork
