@@ -19,8 +19,6 @@ env:
   ROX_API_TOKEN: ${{ secrets.ROX_API_TOKEN }}
   ROX_CENTRAL_ENDPOINT: ${{ secrets.ROX_CENTRAL_ENDPOINT }}
   GITOPS_AUTH_PASSWORD: ${{ secrets.GITOPS_AUTH_PASSWORD }}
-  # Uncomment this when using Gitlab
-  # GITOPS_AUTH_USERNAME: ${{ secrets.GITOPS_AUTH_USERNAME }}
   QUAY_IO_CREDS: ${{ secrets.QUAY_IO_CREDS }}
   COSIGN_SECRET_PASSWORD: ${{ secrets.COSIGN_SECRET_PASSWORD }}
   COSIGN_SECRET_KEY: ${{ secrets.COSIGN_SECRET_KEY }}
@@ -57,8 +55,6 @@ jobs:
             ROX_API_TOKEN: `${{ secrets.ROX_API_TOKEN }}`,
             ROX_CENTRAL_ENDPOINT: `${{ secrets.ROX_CENTRAL_ENDPOINT }}`,
             GITOPS_AUTH_PASSWORD: `${{ secrets.GITOPS_AUTH_PASSWORD }}`,
-            # Uncomment this when using Gitlab
-            # GITOPS_AUTH_USERNAME: `${{ secrets.GITOPS_AUTH_USERNAME }}`,
             QUAY_IO_CREDS: `${{ secrets.QUAY_IO_CREDS }}`,
             COSIGN_SECRET_PASSWORD: `${{ secrets.COSIGN_SECRET_PASSWORD }}`,
             COSIGN_SECRET_KEY: `${{ secrets.COSIGN_SECRET_KEY }}`,

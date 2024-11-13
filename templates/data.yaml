@@ -20,6 +20,7 @@ build_secrets:
   - name: GITOPS_AUTH_USERNAME
     commented_out: true
     comment: Uncomment this when using Gitlab
+    if: '!isGitHub'
   - name: QUAY_IO_CREDS
   - name: COSIGN_SECRET_PASSWORD
   - name: COSIGN_SECRET_KEY
