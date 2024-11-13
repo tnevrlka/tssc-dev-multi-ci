@@ -16,10 +16,12 @@ env:
   IMAGE_REGISTRY_USER: ${{ "secrets.IMAGE_REGISTRY_USER" | inCurlies }}
   IMAGE_REGISTRY_PASSWORD: ${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}
 {% for secret in gitops_secrets %}
+{%- if secret | eval_if_condition %}
 {%- if secret.comment %}
   # {{ secret.comment }}
 {%- endif %}
   {{ secret.name }}: ${{ ("secrets." + secret.name) | inCurlies }}
+{%- endif %}
 {%- endfor %}
 
   # 🖊️ EDIT to specify custom tags for the container image, or default tags will be generated below.
@@ -52,10 +54,12 @@ jobs:
             IMAGE_REGISTRY_USER: `${{ "secrets.IMAGE_REGISTRY_USER" | inCurlies }}`,
             IMAGE_REGISTRY_PASSWORD: `${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}`,
 {% for secret in gitops_secrets %}
+{%- if secret | eval_if_condition %}
 {%- if secret.comment %}
             # {{ secret.comment }}
 {%- endif %}
             {{ secret.name }}: `${{ ("secrets." + secret.name) | inCurlies }}`,
+{%- endif %}
 {%- endfor %}
           };
           const missingSecrets = Object.entries(secrets).filter(([ name, value ]) => {
