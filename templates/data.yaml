@@ -22,6 +22,11 @@ build_secrets:
     comment: Uncomment this when using Gitlab
     if: '!isGitHub'
   - name: QUAY_IO_CREDS
+    if: isJenkins
+  - name: QUAY_IO_CREDS_USR
+    if: '!isJenkins'
+  - name: QUAY_IO_CREDS_PSW
+    if: '!isJenkins'
   - name: COSIGN_SECRET_PASSWORD
   - name: COSIGN_SECRET_KEY
   - name: COSIGN_PUBLIC_KEY
