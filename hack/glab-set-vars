@@ -8,9 +8,11 @@ if [ $# -ne 1 ]; then
 fi
 
 REPO=$1
-PID=$(curl -s -L --header "PRIVATE-TOKEN: $MY_GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/$MY_GITLAB_USER%2F$REPO" | jq ".id")
-HEADER=
+HEADER="PRIVATE-TOKEN: $MY_GITLAB_TOKEN"
 URL=https://gitlab.com/api/v4/projects
+
+# Lookup the project id so we can use it below
+PID=$(curl -s -L --header "$HEADER" "$URL/$MY_GITLAB_USER%2F$REPO" | jq ".id")
 
 function setVars() {
     NAME=$1
@@ -19,11 +21,10 @@ function setVars() {
 
     # Delete first because if the secret already exists then its value
     # won't be changed by the POST below
-    curl -s --request DELETE --header "PRIVATE-TOKEN: $MY_GITLAB_TOKEN" \
-        "$URL/$PID/variables/$NAME"
+    curl -s --request DELETE --header "$HEADER" "$URL/$PID/variables/$NAME"
 
     # Set the new key/value
-    curl -s --request POST --header "PRIVATE-TOKEN: $MY_GITLAB_TOKEN" \
+    curl -s --request POST --header "$HEADER" \
         "$URL/$PID/variables" --form "key=$NAME" --form "value=$VALUE" | jq
 }
 

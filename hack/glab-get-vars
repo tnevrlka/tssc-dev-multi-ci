@@ -8,8 +8,11 @@ if [ $# -ne 1 ]; then
 fi
 
 REPO=$1
-PID=$(curl -s -L --header "PRIVATE-TOKEN: $MY_GITLAB_TOKEN" "https://gitlab.com/api/v4/projects/$MY_GITLAB_USER%2F$REPO" | jq ".id")
+HEADER="PRIVATE-TOKEN: $MY_GITLAB_TOKEN"
 URL=https://gitlab.com/api/v4/projects
+
+# Lookup the project id so we can use it below
+PID=$(curl -s -L --header "$HEADER" "$URL/$MY_GITLAB_USER%2F$REPO" | jq ".id")
 
 echo "Variables defined in https://gitlab.com/$MY_GITLAB_USER/$REPO"
 curl -s --header "PRIVATE-TOKEN: $MY_GITLAB_TOKEN" "$URL/$PID/variables" | jq
