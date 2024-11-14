@@ -24,8 +24,8 @@ function setVars() {
     curl -s --request DELETE --header "$HEADER" "$URL/$PID/variables/$NAME"
 
     # Set the new key/value
-    curl -s --request POST --header "$HEADER" \
-        "$URL/$PID/variables" --form "key=$NAME" --form "value=$VALUE" | jq
+    curl -s --request POST --header "$HEADER" "$URL/$PID/variables" \
+        --form "key=$NAME" --form "value=$VALUE" --form "masked=true" | jq
 }
 
 setVars ROX_CENTRAL_ENDPOINT $ROX_CENTRAL_ENDPOINT
