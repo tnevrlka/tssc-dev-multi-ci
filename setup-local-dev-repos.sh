@@ -27,7 +27,7 @@ TEST_GITOPS_GITLAB_REPO=https://gitlab.com/$TEST_REPO_GITLAB_ORG/tssc-dev-gitops
 function cloneIfRepoExists() {
     REPO=$1
     DEST=$2
-    echo "Test repo $repo and clone into $DEST"
+    echo "Test repo $REPO and clone into $DEST"
 
     REPO_EXISTS=$(curl -s -o /dev/null -I -w "%{http_code}" $REPO)
     # 200 == exists
