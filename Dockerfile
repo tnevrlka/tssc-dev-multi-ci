@@ -12,7 +12,7 @@ FROM docker.io/redhat/ubi9-minimal:9.4
 
 RUN \
   microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && \
-  microdnf -y --nodocs --setopt=keepcache=0 install which git-core jq python3.11 podman buildah podman fuse-overlayfs && \
+  microdnf -y --nodocs --setopt=keepcache=0 install which git-core jq python3.11 podman buildah podman fuse-overlayfs findutils && \
   ln -s /usr/bin/python3.11 /usr/bin/python3
 
 RUN \
