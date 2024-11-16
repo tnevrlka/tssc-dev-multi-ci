@@ -39,9 +39,11 @@ function updateBuild() {
     # Update REKOR_HOST and TUF_MIRROR values directly
     sed -i '/export REKOR_HOST=/d' $SETUP_ENV
     sed -i '/export TUF_MIRROR=/d' $SETUP_ENV
+    sed -i '/export IGNORE_REKOR=/d' $SETUP_ENV
     
     echo ""  >> $SETUP_ENV
     echo "export REKOR_HOST=$REKOR_HOST" >> $SETUP_ENV
+    echo "export IGNORE_REKOR=$IGNORE_REKOR" >> $SETUP_ENV
     echo "export TUF_MIRROR=$TUF_MIRROR" >> $SETUP_ENV
     echo "# Update forced CI test $(date)" >> $SETUP_ENV
     updateGitAndQuayRefs $SETUP_ENV
