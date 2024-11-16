@@ -32,6 +32,21 @@ function rox-deploy-check() {
 
     echo "Using rox central endpoint ${ROX_CENTRAL_ENDPOINT}"
 
+    if [[ -n "$GITOPS_AUTH_PASSWORD" ]]; then
+        gitops_repo_url=${GITOPS_REPO_URL%'.git'}
+        remote_without_protocol=${gitops_repo_url#'https://'}
+        password=$GITOPS_AUTH_PASSWORD
+        if [[ -n "$GITOPS_AUTH_USERNAME" ]]; then
+            username=$GITOPS_AUTH_USERNAME
+            echo "https://${username}:${password})@${hostname}" > "${HOME}/.git-credentials"
+            origin_with_auth=https://${username}:${password}@${remote_without_protocol}.git
+        else
+            origin_with_auth=https://${password}@${remote_without_protocol}.git
+        fi
+    else
+        echo "WARNING git credentials to clone gitops repository ${GITOPS_REPO_URL} is not configured."
+    fi
+
     # Clone gitops repository
     echo "Using gitops repository: ${GITOPS_REPO_URL}"
     git clone "${GITOPS_REPO_URL}" --single-branch --depth 1 gitops
