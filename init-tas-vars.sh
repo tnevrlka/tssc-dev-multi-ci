@@ -7,9 +7,11 @@ echo "Checking for REKOR and TUF"
 RT=$(oc get routes -n rhtap-tas -o name 2> /dev/null | grep rekor-server)
 if [[ $RT == "" ]]; then
     export REKOR_HOST=''
+    export IGNORE_REKOR=true
 else
     HOST=$(oc get -n rhtap-tas $RT -o jsonpath={.spec.host})
     export REKOR_HOST=https://$HOST
+    export IGNORE_REKOR=false
 fi
 
 RT=$(oc get routes -n rhtap-tas -o name 2> /dev/null | grep tuf)
@@ -22,3 +24,4 @@ fi
 
 echo "REKOR_HOST set to $REKOR_HOST"
 echo "TUF_MIRROR set to $TUF_MIRROR"
+echo "IGNORE_REKOR set to $IGNORE_REKOR"
