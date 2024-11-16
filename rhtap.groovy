@@ -86,3 +86,7 @@ def gather_images_to_upload_sbom( ) {
 def download_sbom_from_url_in_attestation( ) {
     run_script ('download-sbom-from-url-in-attestation.sh')
 }
+
+def upload_sbom_to_trustification( ) {
+    run_script ('upload-sbom-to-trustification.sh')
+}
