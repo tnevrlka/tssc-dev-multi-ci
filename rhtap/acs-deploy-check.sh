@@ -44,7 +44,7 @@ function rox-deploy-check() {
             origin_with_auth=https://${password}@${remote_without_protocol}.git
         fi
     else
-        echo "WARNING git credentials to clone gitops repository ${GITOPS_REPO_URL} is not configured." 
+        echo "WARNING git credentials to clone gitops repository ${GITOPS_REPO_URL} is not configured."
     fi
 
     # Clone gitops repository
