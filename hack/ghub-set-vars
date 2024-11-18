@@ -16,7 +16,7 @@ function setVars() {
     VALUE=$2
     echo "setting Secret $NAME in $REPO"
     if [ -z "$VALUE" ]; then
-        gh secret set "$NAME" -b ''
+        gh secret delete "$NAME"
     else
         gh secret set "$NAME" -b "$VALUE"
     fi
