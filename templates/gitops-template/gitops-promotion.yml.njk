@@ -29,6 +29,11 @@ env:
   COSIGN_PUBLIC_KEY: ${{ "secrets.COSIGN_PUBLIC_KEY" | inCurlies }}
   GITOPS_AUTH_PASSWORD: ${{ "secrets.GITOPS_AUTH_PASSWORD" | inCurlies }}
 
+  TRUSTIFICATION_BOMBASTIC_API_URL: ${{ "secrets.TRUSTIFICATION_BOMBASTIC_API_URL" | inCurlies }}
+  TRUSTIFICATION_OIDC_ISSUER_URL: ${{ "secrets.TRUSTIFICATION_OIDC_ISSUER_URL" | inCurlies }}
+  TRUSTIFICATION_OIDC_CLIENT_ID: ${{ "secrets.TRUSTIFICATION_OIDC_CLIENT_ID" | inCurlies }}
+  TRUSTIFICATION_OIDC_CLIENT_SECRET: ${{ "secrets.TRUSTIFICATION_OIDC_CLIENT_SECRET" | inCurlies }} 
+
   # 🖊️ EDIT to specify custom tags for the container image, or default tags will be generated below.
   IMAGE_TAGS: ""
   IMAGE_TAG: ""

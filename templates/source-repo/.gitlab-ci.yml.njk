@@ -27,8 +27,8 @@ stages:
       - results/
   {#- The update-deployment should run only after changes are merged -#}
   {% if substep == "update-deployment" %}
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
+  rules: 
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   {%- endif %}
 {%- endfor -%}
 {%- endfor %}
