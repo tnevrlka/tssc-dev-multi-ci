@@ -86,15 +86,15 @@ function updateRepos() {
     popd
 }
 
-# set secrets and then push to repos to ensure pipeline runs are 
+# set secrets and then push to repos to ensure pipeline runs are
 # with correct values
 # github
 bash hack/ghub-set-vars $TEST_BUILD_REPO
 bash hack/ghub-set-vars $TEST_GITOPS_REPO
 updateRepos $BUILD
-updateRepos $GITOPS 
+updateRepos $GITOPS
 
-# gitlab 
+# gitlab
 bash hack/glab-set-vars $(basename $TEST_BUILD_GITLAB_REPO)
 bash hack/glab-set-vars $(basename $TEST_GITOPS_GITLAB_REPO)
 updateRepos $GITLAB_BUILD

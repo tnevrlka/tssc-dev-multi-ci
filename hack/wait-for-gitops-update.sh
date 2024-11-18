@@ -45,7 +45,6 @@ function pushIfUpdated() {
     fi
 }
 
-
 GH_PREV=$(getImage $GH_RAW)
 GL_PREV=$(getImage $GL_RAW)
 J_PREV=$(getImage $J_RAW)
@@ -57,10 +56,10 @@ while true; do
         echo
         echo "Github Repo: $GITHUB_REPO"
         echo "Waiting for Github image $GH_PREV to be updated"
-        echo 
+        echo
         echo "Gitlab Repo: $GITLAB_REPO"
         echo "Waiting for Gitlab image $GL_PREV to be updated"
-        echo 
+        echo
         echo "Jenkins Repo: $JENKINS_REPO"
         echo "Waiting for Jenkins image $J_PREV to be updated"
     fi
@@ -71,7 +70,7 @@ while true; do
     GH_CURRENT=$(getImage $GH_RAW)
     promoteIfUpdated GH_PREV $GH_CURRENT $GITHUB_REPO
     GL_CURRENT=$(getImage $GL_RAW)
-    promoteIfUpdated GL_PREV $GL_CURRENT $GITLAB_REPO  
+    promoteIfUpdated GL_PREV $GL_CURRENT $GITLAB_REPO
     J_CURRENT=$(getImage $J_RAW)
     pushIfUpdated J_PREV $J_CURRENT $JENKINS_REPO
     SLEEP=10
