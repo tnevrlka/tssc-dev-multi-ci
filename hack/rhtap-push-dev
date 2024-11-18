@@ -1,0 +1,88 @@
+#!/bin/bash -e
+set -o pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"/..
+
+# Print help message
+function print_help() {
+    echo "Usage: $0 [--env dev | development | stage ] [--repo <repo-url>] [-h|--help]"
+    echo "  --env       'dev', env to promote from - dev promotes to stage, stage to prod"
+    echo "  --repo      git repo to promote"
+    echo "  --current   git repo in current directory (Default)"
+    echo
+    echo "Example usage: $0 --env dev --current  # promotes from dev to stage "
+    echo "Example usage: $0 --env dev   # promotes from dev to stage "
+    echo "Example usage: $0 --env stage  # promotes from stage to prod"
+    echo "This script uses gitlab.com and github.com to determine how to create a PR"
+}
+
+ENVIRONMENT=dev
+while [[ $# -gt 0 ]]; do
+    key=$1
+    case $key in
+    --env)
+        shift
+        ENVIRONMENT=$1
+        shift
+        ;;
+    --repo)
+        shift
+        GITOPS_REPO=$1
+        shift
+        ;;
+    --current)
+        if [ -d .git ]; then
+            GITOPS_REPO=$(git config --get remote.origin.url)
+        else
+            echo "Warning: --current specified but not a git repo"
+        fi
+        shift
+        ;;
+    -h | --help)
+        print_help
+        exit 0
+        ;;
+    *)
+        shift
+        ;;
+    esac
+done
+
+case $ENVIRONMENT in
+development | dev)
+    SRC_OVERLAY=development
+    DST_OVERLAY=stage
+    ;;
+stage)
+    SRC_OVERLAY=stage
+    DST_OVERLAY=prod
+    ;;
+*)
+    echo "Invalid Environment. Valid options are <dev | development | stage>."
+    echo "dev/development (promotes to stage) or stage (promotes to prod)"
+    exit 0
+    ;;
+esac
+if [ -z $GITOPS_REPO ]; then
+    echo "Missing Gitops Repo to promote"
+    echo "use --repo for any repo and --current for repo in the current directory"
+    exit
+fi
+echo "Repo: $GITOPS_REPO"
+echo "Promote from $SRC_OVERLAY to $DST_OVERLAY"
+DIR=$(mktemp -d)
+cd $DIR
+git clone $GITOPS_REPO promote-repo
+cd promote-repo
+if [ -f application.yaml ]; then
+    COMPONENT_NAME=$(yq .metadata.name application.yaml)
+    SRC_PATCH="components/${COMPONENT_NAME}/overlays/$SRC_OVERLAY/deployment-patch.yaml"
+    DST_PATCH="components/${COMPONENT_NAME}/overlays/$DST_OVERLAY/deployment-patch.yaml"
+    cp $SRC_PATCH $DST_PATCH
+    git add $DST_PATCH
+    git commit -m "Promoted ${SRC_OVERLAY} to ${DST_OVERLAY}"
+    git push --set-upstream origin main
+else
+    echo "$GITOPS_REPO is not a gitops-repo, missing application.yaml in root dir"
+    echo "Perhaps you mean $GITOPS_REPO-gitops ?"
+fi

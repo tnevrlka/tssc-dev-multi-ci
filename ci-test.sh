@@ -86,23 +86,25 @@ function updateRepos() {
     popd
 }
 
-# Jenkins
-updateRepos $JENKINS_BUILD
-updateRepos $JENKINS_GITOPS
+# set secrets and then push to repos to ensure pipeline runs are
+# with correct values
 # github
+bash hack/ghub-set-vars $TEST_BUILD_REPO
+bash hack/ghub-set-vars $TEST_GITOPS_REPO
 updateRepos $BUILD
 updateRepos $GITOPS
+
 # gitlab
+bash hack/glab-set-vars $(basename $TEST_BUILD_GITLAB_REPO)
+bash hack/glab-set-vars $(basename $TEST_GITOPS_GITLAB_REPO)
 updateRepos $GITLAB_BUILD
 updateRepos $GITLAB_GITOPS
 
-echo "jenkins is global"
+# Jenkins
+# note, jenkins secrets are global so set once"
 bash hack/jenkins-set-secrets
-
-bash hack/ghub-set-vars $TEST_BUILD_REPO
-bash hack/ghub-set-vars $TEST_GITOPS_REPO
-bash hack/glab-set-vars $(basename $TEST_BUILD_GITLAB_REPO)
-bash hack/glab-set-vars $(basename $TEST_GITOPS_GITLAB_REPO)
+updateRepos $JENKINS_BUILD
+updateRepos $JENKINS_GITOPS
 
 echo
 echo "Github Build and Gitops Repos"
