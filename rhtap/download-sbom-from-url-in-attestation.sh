@@ -288,6 +288,9 @@ find_blob_url() {
       end' < "$attestation_file"
 }
 
+echo "Making sure $SBOMS_DIR directory exists"
+mkdir -p "$SBOMS_DIR"
+
 jq -r '.components[].containerImage' <<< "$IMAGES" | while read -r image; do
     echo "Looking for SBOM_BLOB_URL result in the attestation for $image"
     attestation_file="$WORKDIR/$image/attestations.json"
