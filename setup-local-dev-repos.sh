@@ -21,13 +21,16 @@ TEST_BUILD_REPO=https://github.com/$TEST_REPO_ORG/devfile-sample-nodejs-dance
 
 # These repos are all optional, if they don't exist, the build can continue
 TEST_GITOPS_REPO=https://github.com/$TEST_REPO_ORG/tssc-dev-gitops
+
 TEST_BUILD_GITLAB_REPO=https://gitlab.com/$TEST_REPO_GITLAB_ORG/devfile-sample-nodejs-dance
 TEST_GITOPS_GITLAB_REPO=https://gitlab.com/$TEST_REPO_GITLAB_ORG/tssc-dev-gitops
+
+TEST_BUILD_JENKINS_REPO=https://github.com/$TEST_REPO_ORG/tssc-dev-source-jenkins
+TEST_GITOPS_JENKINS_REPO=https://github.com/$TEST_REPO_ORG/tssc-dev-gitops-jenkins
 
 function cloneIfRepoExists() {
     REPO=$1
     DEST=$2
-    echo "Test repo $REPO and clone into $DEST"
 
     REPO_EXISTS=$(curl -s -o /dev/null -I -w "%{http_code}" $REPO)
     # 200 == exists
@@ -36,7 +39,7 @@ function cloneIfRepoExists() {
         echo "Clone source: $REPO into : $DEST"
         git clone --quiet $REPO $DEST > /dev/null
     else
-        echo "Cannot find $REPO - skipping it"
+        echo "Wadning No Repo $REPO to initialize $DEST"
     fi
 }
 
@@ -50,10 +53,16 @@ BUILD=$TMP_REPOS/build
 GITOPS=$TMP_REPOS/gitops
 GITLAB_BUILD=$TMP_REPOS/gitlab-build
 GITLAB_GITOPS=$TMP_REPOS/gitlab-gitops
+JENKINS_BUILD=$TMP_REPOS/jenkins-build
+JENKINS_GITOPS=$TMP_REPOS/jenkins-gitops
+
 cloneIfRepoExists $TEST_BUILD_REPO $BUILD
 cloneIfRepoExists $TEST_GITOPS_REPO $GITOPS
 cloneIfRepoExists $TEST_BUILD_GITLAB_REPO $GITLAB_BUILD
 cloneIfRepoExists $TEST_GITOPS_GITLAB_REPO $GITLAB_GITOPS
+
+cloneIfRepoExists $TEST_BUILD_JENKINS_REPO $JENKINS_BUILD
+cloneIfRepoExists $TEST_GITOPS_JENKINS_REPO $JENKINS_GITOPS
 
 # WARNING - if GITOPS_REPO_URL is set, update deployment will try to update
 # the gitops repo. Disable this here if the gitops repo is NOT a fork
