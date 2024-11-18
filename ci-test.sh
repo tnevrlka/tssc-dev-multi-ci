@@ -1,6 +1,7 @@
 # get local test repos to patch
 source setup-local-dev-repos.sh
 source init-tas-vars.sh
+eval "$(hack/get-trustification-env.sh)"
 
 if [ $TEST_REPO_ORG == "redhat-appstudio" ]; then
     echo "Cannot do CI testing using the redhat-appstudio org"
@@ -14,17 +15,6 @@ function updateGitAndQuayRefs() {
         sed -i "s!https://github.com/redhat-appstudio!https://github.com/$MY_GITHUB_USER!g" $1
     fi
 }
-
-#Jenkins
-echo "Update Jenkins file in $BUILD and $GITOPS"
-echo "Jenkins is able to reuse the same Github repo as github actions"
-GEN_SRC=generated/source-repo
-GEN_GITOPS=generated/gitops-template
-
-cp $GEN_SRC/jenkins/Jenkinsfile $BUILD/Jenkinsfile
-cp $GEN_GITOPS/jenkins/Jenkinsfile $GITOPS/Jenkinsfile
-updateGitAndQuayRefs $BUILD/Jenkinsfile
-updateGitAndQuayRefs $GITOPS/Jenkinsfile
 
 function updateBuild() {
     REPO=$1
@@ -49,12 +39,26 @@ function updateBuild() {
     updateGitAndQuayRefs $SETUP_ENV
     cat $SETUP_ENV
 }
-# Repos on github and gitlab, github reused for Jenkins
-# source repos get the name of the corresponding GITOPS REPO
+# Repos on github and gitlab, github and jenkins
+# source repos are updated with the name of the corresponding GITOPS REPO for update-deployment
 updateBuild $BUILD $TEST_GITOPS_REPO
 updateBuild $GITOPS
 updateBuild $GITLAB_BUILD $TEST_GITOPS_GITLAB_REPO
 updateBuild $GITLAB_GITOPS
+updateBuild $JENKINS_BUILD $TEST_GITOPS_JENKINS_REPO
+updateBuild $JENKINS_GITOPS
+
+# source repos for copying the generated manifests
+GEN_SRC=generated/source-repo
+GEN_GITOPS=generated/gitops-template
+
+#Jenkins
+echo "Update Jenkins file in $JENKINS_BUILD and $JENKINS_GITOPS"
+echo "NEW - JENKINS USES A SEPARATE REPO FROM GITHUB ACTIONS"
+cp $GEN_SRC/jenkins/Jenkinsfile $JENKINS_BUILD/Jenkinsfile
+cp $GEN_GITOPS/jenkins/Jenkinsfile $JENKINS_GITOPS/Jenkinsfile
+updateGitAndQuayRefs $JENKINS_BUILD/Jenkinsfile
+updateGitAndQuayRefs $JENKINS_GITOPS/Jenkinsfile
 
 # Gitlab CI
 echo "Update .gitlab-ci.yml file in $GITLAB_BUILD and $GITLAB_GITOPS"
@@ -82,6 +86,9 @@ function updateRepos() {
     popd
 }
 
+# Jenkins
+updateRepos $JENKINS_BUILD
+updateRepos $JENKINS_GITOPS
 # github
 updateRepos $BUILD
 updateRepos $GITOPS
@@ -89,15 +96,23 @@ updateRepos $GITOPS
 updateRepos $GITLAB_BUILD
 updateRepos $GITLAB_GITOPS
 
+echo "jenkins is global"
+bash hack/jenkins-set-secrets
+
 bash hack/ghub-set-vars $TEST_BUILD_REPO
 bash hack/ghub-set-vars $TEST_GITOPS_REPO
 bash hack/glab-set-vars $(basename $TEST_BUILD_GITLAB_REPO)
 bash hack/glab-set-vars $(basename $TEST_GITOPS_GITLAB_REPO)
 
+echo
 echo "Github Build and Gitops Repos"
 echo "Build: $TEST_BUILD_REPO"
 echo "Gitops: $TEST_GITOPS_REPO"
-
+echo
 echo "Gitlab Build and Gitops Repos"
 echo "Build: $TEST_BUILD_GITLAB_REPO"
 echo "Gitops: $TEST_GITOPS_GITLAB_REPO"
+echo
+echo "Jenkins Build and Gitops Repos"
+echo "Build: $TEST_BUILD_JENKINS_REPO"
+echo "Gitops: $TEST_GITOPS_JENKINS_REPO"
