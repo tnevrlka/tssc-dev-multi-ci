@@ -2,7 +2,7 @@
 # Base image for use as a step runner for RHTAP pipelines
 #
 
-FROM docker.io/redhat/ubi9-minimal:9.4
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.4
 
 # Todo:
 # - Pin all the versions (maybe)
