@@ -127,7 +127,7 @@ required_vars=(
 )
 any_missing=false
 for env_var in "${required_vars[@]}"; do
-    if [[ -z "${!env_var}" ]]; then
+    if [[ -z "${!env_var// /}" ]]; then
         echo "Missing environment variable: $env_var" >&2
         any_missing=true
     fi

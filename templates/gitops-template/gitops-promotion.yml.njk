@@ -24,11 +24,6 @@ env:
 {%- endif %}
 {%- endfor %}
 
-  TRUSTIFICATION_BOMBASTIC_API_URL: ${{ "secrets.TRUSTIFICATION_BOMBASTIC_API_URL" | inCurlies }}
-  TRUSTIFICATION_OIDC_ISSUER_URL: ${{ "secrets.TRUSTIFICATION_OIDC_ISSUER_URL" | inCurlies }}
-  TRUSTIFICATION_OIDC_CLIENT_ID: ${{ "secrets.TRUSTIFICATION_OIDC_CLIENT_ID" | inCurlies }}
-  TRUSTIFICATION_OIDC_CLIENT_SECRET: ${{ "secrets.TRUSTIFICATION_OIDC_CLIENT_SECRET" | inCurlies }} 
-
   # 🖊️ EDIT to specify custom tags for the container image, or default tags will be generated below.
   IMAGE_TAGS: ""
   IMAGE_TAG: ""
@@ -60,9 +55,6 @@ jobs:
             IMAGE_REGISTRY_PASSWORD: `${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}`,
 {% for secret in gitops_secrets %}
 {%- if secret | eval_if_condition %}
-{%- if secret.comment %}
-            # {{ secret.comment }}
-{%- endif %}
             {{ secret.name }}: `${{ ("secrets." + secret.name) | inCurlies }}`,
 {%- endif %}
 {%- endfor %}
