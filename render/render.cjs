@@ -37,6 +37,10 @@ const filters = {
   // For putting literal {{ }} chars in the output
   'inCurlies': (str) => `\{{ ${str} }}`,
   'concat': (arr1, arr2) => arr1.concat(arr2),
+  // Note: this is an indirect eval, so the code can only access globals
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
+  'eval': (code) => eval?.(code),
+  'eval_if_condition': (obj) => !obj.if || eval?.(obj.if),
 }
 
 function setupFilters(env, filters) {
@@ -55,10 +59,6 @@ function setupGlobals(env, contextFile, extraData) {
     'nlnl': "\n\n",
   }
 
-  for (const g in globals) {
-    env.addGlobal(g, globals[g])
-  }
-
   // Expect this to be the name of the file being generated
   const targetFile = contextData.targetFile
 
@@ -71,7 +71,12 @@ function setupGlobals(env, contextFile, extraData) {
   }
 
   for (const m in fileNameMatchers) {
-    env.addGlobal(`is${m}`, fileNameMatchers[m].test(targetFile))
+    globals[`is${m}`] = fileNameMatchers[m].test(targetFile)
+  }
+
+  for (const g in globals) {
+    env.addGlobal(g, globals[g])
+    globalThis[g] = globals[g]
   }
 }
 
