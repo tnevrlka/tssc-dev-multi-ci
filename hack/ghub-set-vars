@@ -2,23 +2,21 @@
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 
 if [ $# -eq 1 ]; then
-    REPO=$1
-    DIR=$(mktemp -d)
-    pushd $DIR
-    git clone $1 set-vars
-    cd set-vars
+    REPO_URL=$1
+    # Assume $REPO_URL is like "https://github.com/org/repo"
+    # and use cut to pull out the "org/repo" part
+    ORG_AND_REPO=$(echo "$REPO_URL" | cut -d/ -f4,5)
 fi
-
-REPO=$(git config --get remote.origin.url)
 
 function setVars() {
     NAME=$1
     VALUE=$2
-    echo "setting Secret $NAME in $REPO"
+
+    echo "setting Secret $NAME in github.com/$ORG_AND_REPO"
     if [ -z "$VALUE" ]; then
-        gh secret set "$NAME" -b " "
+        gh secret set "$NAME" --body " " --repo "$ORG_AND_REPO"
     else
-        gh secret set "$NAME" -b "$VALUE"
+        gh secret set "$NAME" --body "$VALUE" --repo "$ORG_AND_REPO"
     fi
 }
 
