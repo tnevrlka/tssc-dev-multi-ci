@@ -14,6 +14,9 @@ if [ $TEST_REPO_GITLAB_ORG == "redhat-appstudio" ]; then
     echo "Pass org names in MY_TEST_REPO_ORG and MY_TEST_REPO_GITLAB_ORG"
 fi
 
+UPSTREAM_BUILD_REPO=https://github.com/redhat-appstudio/devfile-sample-nodejs-dance
+UPSTREAM_GITOPS_REPO=https://github.com/redhat-appstudio/tssc-dev-gitops
+
 # this will be copied into a temp directory
 # pipelines will be pushed into it for local test
 # build and gitops on gitlab
@@ -38,27 +41,57 @@ if [ -n "$USE_SSH_GIT_URLS" ]; then
     TEST_GITOPS_JENKINS_REPO_SSH=git@github.com:$TEST_REPO_ORG/tssc-dev-gitops-jenkins.git
 fi
 
-function cloneIfRepoExists() {
-    REPO=$1
-    REPO_HTTPS=$2
+function cloneRepo() {
+    UPSTREAM_REPO=$1
+    REPO=$2
+    REPO_HTTPS=$3
     # $REPO and $REPO_HTTPS are the same unless $USE_SSH_GIT_URLS is set
-    DEST=$3
-    echo "Test repo $REPO and clone into $DEST"
+    DEST=$4
+
+    # Assume $REPO_HTTPS is like "https://github.com/org/repo"
+    # and use cut to pull out the "org/repo" part
+    ORG_AND_REPO=$(echo "$REPO_HTTPS" | cut -d/ -f4,5)
+
+    # Clone from the "uptream" repo
+    echo "Clone from $UPSTREAM_REPO into $DEST"
+    git clone --quiet $UPSTREAM_REPO $DEST > /dev/null
 
     REPO_EXISTS=$(curl -s -o /dev/null -I -w "%{http_code}" $REPO_HTTPS)
     # 200 == exists
     # 404 == does not exist
     if [ $REPO_EXISTS == 200 ]; then
-        echo "Clone source: $REPO into : $DEST"
-        git clone --quiet $REPO $DEST > /dev/null
+        # Test "fork" repo exists
+        true
     else
-        echo "Wadning No Repo $REPO to initialize $DEST"
+        # Test "fork" repo does not exist
+        if [[ $REPO_HTTPS =~ github.com ]]; then
+            # Create it
+            echo Creating repo at $REPO_HTTPS
+            gh repo create "$ORG_AND_REPO" --public
+        else
+            # Ask user to create it
+            # (Todo: Create it using GitLab's REST API)
+            echo Please manually create a repo at $REPO_HTTPS
+            echo "(Configure to allow force push to main)"
+            exit 1
+        fi
     fi
+
+    # Remove the original "upstream" remote and add a new one
+    pushd $DEST
+    echo "Updating origin to $REPO"
+    git remote set-url origin "$REPO"
+
+    # Force push so we start from a known state
+    echo "Force pushing to main branch"
+    git push --quiet -f origin main:main
+    popd
 }
 
 # clone if repos exist, disable gitops
 # Github in build/gitops
 # Gitlab in gitlab-build, gitlab-gitops
+# Jenkins in jenkins-build, jenkins-gitops
 
 TMP_REPOS=tmp
 rm -rf $TMP_REPOS/*
@@ -69,12 +102,12 @@ GITLAB_GITOPS=$TMP_REPOS/gitlab-gitops
 JENKINS_BUILD=$TMP_REPOS/jenkins-build
 JENKINS_GITOPS=$TMP_REPOS/jenkins-gitops
 
-cloneIfRepoExists ${TEST_BUILD_REPO_SSH:-$TEST_BUILD_REPO} $TEST_BUILD_REPO $BUILD
-cloneIfRepoExists ${TEST_GITOPS_REPO_SSH:-$TEST_GITOPS_REPO} $TEST_GITOPS_REPO $GITOPS
-cloneIfRepoExists ${TEST_BUILD_GITLAB_REPO_SSH:-$TEST_BUILD_GITLAB_REPO} $TEST_BUILD_GITLAB_REPO $GITLAB_BUILD
-cloneIfRepoExists ${TEST_GITOPS_GITLAB_REPO_SSH:-$TEST_GITOPS_GITLAB_REPO} $TEST_GITOPS_GITLAB_REPO $GITLAB_GITOPS
-cloneIfRepoExists ${TEST_BUILD_JENKINS_REPO_SSH:-$TEST_BUILD_JENKINS_REPO} $TEST_BUILD_JENKINS_REPO $JENKINS_BUILD
-cloneIfRepoExists ${TEST_GITOPS_JENKINS_REPO_SSH:-$TEST_GITOPS_JENKINS_REPO} $TEST_GITOPS_JENKINS_REPO $JENKINS_GITOPS
+cloneRepo $UPSTREAM_BUILD_REPO ${TEST_BUILD_REPO_SSH:-$TEST_BUILD_REPO} $TEST_BUILD_REPO $BUILD
+cloneRepo $UPSTREAM_GITOPS_REPO ${TEST_GITOPS_REPO_SSH:-$TEST_GITOPS_REPO} $TEST_GITOPS_REPO $GITOPS
+cloneRepo $UPSTREAM_BUILD_REPO ${TEST_BUILD_GITLAB_REPO_SSH:-$TEST_BUILD_GITLAB_REPO} $TEST_BUILD_GITLAB_REPO $GITLAB_BUILD
+cloneRepo $UPSTREAM_GITOPS_REPO ${TEST_GITOPS_GITLAB_REPO_SSH:-$TEST_GITOPS_GITLAB_REPO} $TEST_GITOPS_GITLAB_REPO $GITLAB_GITOPS
+cloneRepo $UPSTREAM_BUILD_REPO ${TEST_BUILD_JENKINS_REPO_SSH:-$TEST_BUILD_JENKINS_REPO} $TEST_BUILD_JENKINS_REPO $JENKINS_BUILD
+cloneRepo $UPSTREAM_GITOPS_REPO ${TEST_GITOPS_JENKINS_REPO_SSH:-$TEST_GITOPS_JENKINS_REPO} $TEST_GITOPS_JENKINS_REPO $JENKINS_GITOPS
 
 # WARNING - if GITOPS_REPO_URL is set, update deployment will try to update
 # the gitops repo. Disable this here if the gitops repo is NOT a fork
