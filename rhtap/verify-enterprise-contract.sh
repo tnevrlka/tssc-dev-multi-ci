@@ -41,6 +41,14 @@ function validate() {
 
     PUBLIC_KEY=$(base64 -d <<< "$COSIGN_PUBLIC_KEY")
 
+    # Assume the oci registry is the same for each component
+    local first_image_ref=$(jq -r '.components[0].containerImage' <<< "$IMAGES")
+    # Strip off everything after the first / char. It's likely $image_registry will be "quay.io"
+    local image_registry="${first_image_ref/\/*/}"
+    # If the repo is not publicly accessible we need to authenticate so ec can access it
+    prepare-registry-user-pass $image_registry
+    buildah login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $image_registry
+
     ec validate image \
         "--images" \
         "$IMAGES" \

@@ -25,6 +25,8 @@ env:
   TRUSTIFICATION_OIDC_CLIENT_ID: ${{ secrets.TRUSTIFICATION_OIDC_CLIENT_ID }}
   TRUSTIFICATION_OIDC_CLIENT_SECRET: ${{ secrets.TRUSTIFICATION_OIDC_CLIENT_SECRET }}
   TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION: ${{ secrets.TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION }}
+  QUAY_IO_CREDS_USR: ${{ secrets.QUAY_IO_CREDS_USR }}
+  QUAY_IO_CREDS_PSW: ${{ secrets.QUAY_IO_CREDS_PSW }}
 
   # 🖊️ EDIT to specify custom tags for the container image, or default tags will be generated below.
   IMAGE_TAGS: ""
@@ -59,6 +61,8 @@ jobs:
             TRUSTIFICATION_OIDC_CLIENT_ID: `${{ secrets.TRUSTIFICATION_OIDC_CLIENT_ID }}`,
             TRUSTIFICATION_OIDC_CLIENT_SECRET: `${{ secrets.TRUSTIFICATION_OIDC_CLIENT_SECRET }}`,
             TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION: `${{ secrets.TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION }}`,
+            QUAY_IO_CREDS_USR: `${{ secrets.QUAY_IO_CREDS_USR }}`,
+            QUAY_IO_CREDS_PSW: `${{ secrets.QUAY_IO_CREDS_PSW }}`,
           };
           const missingSecrets = Object.entries(secrets).filter(([ name, value ]) => {
             if (value.length === 0) {
