@@ -15,7 +15,10 @@ git clone $GITLAB_REPO $GL_LOCAL --quiet
 git clone $JENKINS_REPO $J_LOCAL --quiet
 WATCH=components/tssc-dev/overlays/development/deployment-patch.yaml
 function getImage() {
-    (cd $1; yq .spec.template.spec.containers[0].image $WATCH)
+    (
+        cd $1
+        yq .spec.template.spec.containers[0].image $WATCH
+    )
 }
 
 # Note, the env var name PREV_IMAGE_ENV_NAME is passed so it can be updated
@@ -72,8 +75,11 @@ while true; do
 
     echo "Checking repo contents ..."
     for repo in $GH_LOCAL $GL_LOCAL $J_LOCAL; do
-        (cd $repo; git pull --quiet)
-    done 
+        (
+            cd $repo
+            git pull --quiet
+        )
+    done
     # pass the var name to hold the previus value so it can be updated
     GH_CURRENT=$(getImage $GH_LOCAL)
     promoteIfUpdated GH_PREV $GH_CURRENT $GITHUB_REPO
