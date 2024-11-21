@@ -38,7 +38,9 @@ function rox-deploy-check() {
         password=$GITOPS_AUTH_PASSWORD
         if [[ -n "$GITOPS_AUTH_USERNAME" ]]; then
             username=$GITOPS_AUTH_USERNAME
-            echo "https://${username}:${password})@${hostname}" > "${HOME}/.git-credentials"
+            hostname=$(echo "${GITOPS_REPO_URL}" | awk -F/ '{print $3}')
+            echo "https://${username}:${password}@${hostname}" > "${HOME}/.git-credentials"
+            printf "[credential \"https://%s\"]\n helper = store" "${hostname}" > "${HOME}/.gitconfig"
             origin_with_auth=https://${username}:${password}@${remote_without_protocol}.git
         else
             origin_with_auth=https://${password}@${remote_without_protocol}.git
