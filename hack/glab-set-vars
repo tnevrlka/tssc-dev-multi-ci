@@ -12,7 +12,7 @@ HEADER="PRIVATE-TOKEN: $MY_GITLAB_TOKEN"
 URL=https://gitlab.com/api/v4/projects
 
 # Lookup the project id so we can use it below
-PID=$(curl -s -L --header "$HEADER" "$URL/$MY_GITLAB_USER%2F$REPO" | jq ".id")
+PID=$(curl -s -L --header "$HEADER" "$URL/$MY_GITLAB_USER%2F${REPO//.git/}" | jq ".id")
 
 function setVars() {
     NAME=$1
