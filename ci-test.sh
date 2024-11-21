@@ -11,7 +11,7 @@ fi
 
 function updateGitAndQuayRefs() {
     if [ -f $1 ]; then
-        sed -i "s!quay.io/redhat-appstudio!quay.io/$MY_QUAY_USER!g" $1
+        sed -i "s!quay.io/redhat-appstudio/rhtap-task-runner.*!quay.io/$MY_QUAY_USER/rhtap-task-runner:dev!g" $1
         sed -i "s!https://github.com/redhat-appstudio!https://github.com/$MY_GITHUB_USER!g" $1
     fi
 }

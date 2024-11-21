@@ -138,9 +138,9 @@ build-push-image: build-image push-image
 #
 MY_QUAY_USER ?= $(USER)
 RUNNER_IMAGE_ORG ?= $(MY_QUAY_USER)
-RUNNER_IMAGE_REPO ?= dance-bootstrap-app
+RUNNER_IMAGE_REPO ?= rhtap-task-runner
 
-TAG_PREFIX=rhtap-runner
+TAG_PREFIX=dev
 
 define floating-tag
 	quay.io/$(RUNNER_IMAGE_ORG)/$(RUNNER_IMAGE_REPO):$(TAG_PREFIX)
