@@ -26,7 +26,7 @@ function patch-gitops() {
             username=$GITOPS_AUTH_USERNAME
             hostname=$(echo "${GITOPS_REPO_URL}" | awk -F/ '{print $3}')
             echo "https://${username}:${password}@${hostname}" > "${HOME}/.git-credentials"
-            printf "[credential \"https://%s\"]\n helper = store" "${hostname}" > "${HOME}/.gitconfig"
+            git config --global "credential.https://${hostname}.helper" store
             origin_with_auth=https://${username}:${password}@${remote_without_protocol}.git
         else
             origin_with_auth=https://${password}@${remote_without_protocol}.git
