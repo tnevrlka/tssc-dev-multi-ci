@@ -26,7 +26,29 @@ function image-registry() {
 # Cosign can use the same credentials as buildah
 function cosign-login() {
     local image_registry="$(image-registry)"
-    cosign login --username="$QUAY_IO_CREDS_USR" --password="$QUAY_IO_CREDS_PSW" "$image_registry"
+    # Check if the IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD are set and if not
+    # compute the values from the image name (backward compatable with prior naming)
+    # Users should set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD for the registri
+    # For backwards compatibility use the ARTIFACTORY or NEXUS or QUAY creds in place
+    # and this code will determine which one to use.
+    if [[ -z "$IMAGE_REGISTRY_USER" || -z "$IMAGE_REGISTRY_PASSWORD" ]]; then 
+        # Determine credentials based on the registry
+        echo "Using $image_registry to determine quay,nexus or artifactory"
+        echo "Set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets to override detection"
+        if [[ "$image_registry" == *"artifactory"* || "$image_registry" == *"jfrog"* ]]; then
+            IMAGE_REGISTRY_USER="$ARTIFACTORY_IO_CREDS_USR"
+            IMAGE_REGISTRY_PASSWORD="$ARTIFACTORY_IO_CREDS_PSW"
+        elif [[ "$image_registry" == *"nexus"* ]]; then
+            IMAGE_REGISTRY_USER="$NEXUS_IO_CREDS_USR"
+            IMAGE_REGISTRY_PASSWORD="$NEXUS_IO_CREDS_PSW"
+        else
+            IMAGE_REGISTRY_USER="$QUAY_IO_CREDS_USR"
+            IMAGE_REGISTRY_PASSWORD="$QUAY_IO_CREDS_PSW"
+        fi 
+    else 
+        echo "Using IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets for cosign"
+    fi  
+    cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" "$image_registry"
 }
 
 # A wrapper for running cosign used for both sign and attest.
