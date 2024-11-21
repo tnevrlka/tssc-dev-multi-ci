@@ -14,7 +14,7 @@ function build() {
     # Users should set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD from now on
     # For backwards compatibility use the ARTIFACTORY or NEXUS or QUAY creds in place
     # and this code will determine which one to use.
-    if [[ -z "$IMAGE_REGISTRY_USER" || -z "$IMAGE_REGISTRY_PASSWORD" ]]; then 
+    if [[ -z "$IMAGE_REGISTRY_USER" || -z "$IMAGE_REGISTRY_PASSWORD" ]]; then
         # Determine credentials based on the registry
         echo "Using $IMAGE_REGISTRY to determine quay,nexus or artifactory"
         echo "Set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets to override detection"
@@ -28,7 +28,7 @@ function build() {
             IMAGE_REGISTRY_USER="$QUAY_IO_CREDS_USR"
             IMAGE_REGISTRY_PASSWORD="$QUAY_IO_CREDS_PSW"
         fi
-    else 
+    else
         echo "Using IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets for buildah"
     fi
     buildah login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $IMAGE_REGISTRY

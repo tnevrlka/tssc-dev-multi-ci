@@ -5,12 +5,20 @@ GITHUB_REPO=https://github.com/$MY_GITHUB_USER/tssc-dev-gitops
 GITLAB_REPO=https://gitlab.com/$MY_GITLAB_USER/tssc-dev-gitops
 JENKINS_REPO=https://github.com/$MY_GITHUB_USER/tssc-dev-gitops-jenkins
 
-GH_RAW=https://raw.githubusercontent.com/$MY_GITHUB_USER/tssc-dev-gitops/refs/heads/main/components/tssc-dev/overlays/development/deployment-patch.yaml
-GL_RAW=https://gitlab.com/$MY_GITLAB_USER/tssc-dev-gitops/-/raw/main/components/tssc-dev/overlays/development/deployment-patch.yaml
-J_RAW=https://raw.githubusercontent.com/$MY_GITHUB_USER/tssc-dev-gitops-jenkins/refs/heads/main/components/tssc-dev/overlays/development/deployment-patch.yaml
+WORK=$(mktemp -d)
 
+GH_LOCAL=$WORK/gh-gitops
+GL_LOCAL=$WORK/gl-gitops
+J_LOCAL=$WORK/j-gitops
+git clone $GITHUB_REPO $GH_LOCAL --quiet
+git clone $GITLAB_REPO $GL_LOCAL --quiet
+git clone $JENKINS_REPO $J_LOCAL --quiet
+WATCH=components/tssc-dev/overlays/development/deployment-patch.yaml
 function getImage() {
-    curl -sL $1 | yq .spec.template.spec.containers[0].image
+    (
+        cd $1
+        yq .spec.template.spec.containers[0].image $WATCH
+    )
 }
 
 # Note, the env var name PREV_IMAGE_ENV_NAME is passed so it can be updated
@@ -45,9 +53,9 @@ function pushIfUpdated() {
     fi
 }
 
-GH_PREV=$(getImage $GH_RAW)
-GL_PREV=$(getImage $GL_RAW)
-J_PREV=$(getImage $J_RAW)
+GH_PREV=$(getImage $GH_LOCAL)
+GL_PREV=$(getImage $GL_LOCAL)
+J_PREV=$(getImage $J_LOCAL)
 # count down and reprint the messages
 COUNT=0
 while true; do
@@ -66,12 +74,18 @@ while true; do
     let COUNT--
 
     echo "Checking repo contents ..."
+    for repo in $GH_LOCAL $GL_LOCAL $J_LOCAL; do
+        (
+            cd $repo
+            git pull --quiet
+        )
+    done
     # pass the var name to hold the previus value so it can be updated
-    GH_CURRENT=$(getImage $GH_RAW)
+    GH_CURRENT=$(getImage $GH_LOCAL)
     promoteIfUpdated GH_PREV $GH_CURRENT $GITHUB_REPO
-    GL_CURRENT=$(getImage $GL_RAW)
+    GL_CURRENT=$(getImage $GL_LOCAL)
     promoteIfUpdated GL_PREV $GL_CURRENT $GITLAB_REPO
-    J_CURRENT=$(getImage $J_RAW)
+    J_CURRENT=$(getImage $J_LOCAL)
     pushIfUpdated J_PREV $J_CURRENT $JENKINS_REPO
     SLEEP=10
     echo "Sleep..."
