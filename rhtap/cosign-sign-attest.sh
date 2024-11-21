@@ -27,6 +27,11 @@ function cosign-login() {
     local image_registry="$(image-registry)"
     prepare-registry-user-pass $image_registry
     cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" "$image_registry"
+    ERR=$?
+    if [ $ERR != 0 ]; then
+        echo "Failed cosign login $image_registry for user $IMAGE_REGISTRY_USER"
+        exit $ERR
+    fi
 }
 
 # A wrapper for running cosign used for both sign and attest.
