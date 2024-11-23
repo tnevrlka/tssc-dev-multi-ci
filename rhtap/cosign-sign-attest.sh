@@ -16,8 +16,7 @@ function full-image-ref() {
     echo "$url@$digest"
 }
 
-# This is probably going to be quay.io, but let's not hard code it
-# here (even though it might be hard coded in a other places).
+# For example quay.io
 function image-registry() {
     local url=$(cat $BASE_RESULTS/buildah-rhtap/IMAGE_URL)
     echo "${url/\/*/}"
@@ -26,29 +25,13 @@ function image-registry() {
 # Cosign can use the same credentials as buildah
 function cosign-login() {
     local image_registry="$(image-registry)"
-    # Check if the IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD are set and if not
-    # compute the values from the image name (backward compatable with prior naming)
-    # Users should set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD for the registri
-    # For backwards compatibility use the ARTIFACTORY or NEXUS or QUAY creds in place
-    # and this code will determine which one to use.
-    if [[ -z "$IMAGE_REGISTRY_USER" || -z "$IMAGE_REGISTRY_PASSWORD" ]]; then
-        # Determine credentials based on the registry
-        echo "Using $image_registry to determine quay,nexus or artifactory"
-        echo "Set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets to override detection"
-        if [[ "$image_registry" == *"artifactory"* || "$image_registry" == *"jfrog"* ]]; then
-            IMAGE_REGISTRY_USER="$ARTIFACTORY_IO_CREDS_USR"
-            IMAGE_REGISTRY_PASSWORD="$ARTIFACTORY_IO_CREDS_PSW"
-        elif [[ "$image_registry" == *"nexus"* ]]; then
-            IMAGE_REGISTRY_USER="$NEXUS_IO_CREDS_USR"
-            IMAGE_REGISTRY_PASSWORD="$NEXUS_IO_CREDS_PSW"
-        else
-            IMAGE_REGISTRY_USER="$QUAY_IO_CREDS_USR"
-            IMAGE_REGISTRY_PASSWORD="$QUAY_IO_CREDS_PSW"
-        fi
-    else
-        echo "Using IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets for cosign"
-    fi
+    prepare-registry-user-pass $image_registry
     cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" "$image_registry"
+    ERR=$?
+    if [ $ERR != 0 ]; then
+        echo "Failed cosign login $image_registry for user $IMAGE_REGISTRY_USER"
+        exit $ERR
+    fi
 }
 
 # A wrapper for running cosign used for both sign and attest.

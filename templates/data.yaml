@@ -47,3 +47,11 @@ gitops_secrets:
   - name: TRUSTIFICATION_OIDC_CLIENT_ID
   - name: TRUSTIFICATION_OIDC_CLIENT_SECRET
   - name: TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION
+  # If the OCI registry is not public then ec needs some credentials so it can see the attestations.
+  # Todo: Use different credentials here so we provide read access only instead of read/write access.
+  - name: QUAY_IO_CREDS
+    if: isJenkins
+  - name: QUAY_IO_CREDS_USR
+    if: '!isJenkins'
+  - name: QUAY_IO_CREDS_PSW
+    if: '!isJenkins'

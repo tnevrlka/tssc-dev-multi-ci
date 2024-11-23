@@ -9,28 +9,7 @@ function build() {
     echo "Running $TASK_NAME:build"
     echo "Running Login"
     IMAGE_REGISTRY="${IMAGE%%/*}"
-    # Check if the IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD are set and if not
-    # compute the values from the image name (backward compatable with prior naming)
-    # Users should set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD from now on
-    # For backwards compatibility use the ARTIFACTORY or NEXUS or QUAY creds in place
-    # and this code will determine which one to use.
-    if [[ -z "$IMAGE_REGISTRY_USER" || -z "$IMAGE_REGISTRY_PASSWORD" ]]; then
-        # Determine credentials based on the registry
-        echo "Using $IMAGE_REGISTRY to determine quay,nexus or artifactory"
-        echo "Set IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets to override detection"
-        if [[ "$IMAGE_REGISTRY" == *"artifactory"* || "$IMAGE_REGISTRY" == *"jfrog"* ]]; then
-            IMAGE_REGISTRY_USER="$ARTIFACTORY_IO_CREDS_USR"
-            IMAGE_REGISTRY_PASSWORD="$ARTIFACTORY_IO_CREDS_PSW"
-        elif [[ "$IMAGE_REGISTRY" == *"nexus"* ]]; then
-            IMAGE_REGISTRY_USER="$NEXUS_IO_CREDS_USR"
-            IMAGE_REGISTRY_PASSWORD="$NEXUS_IO_CREDS_PSW"
-        else
-            IMAGE_REGISTRY_USER="$QUAY_IO_CREDS_USR"
-            IMAGE_REGISTRY_PASSWORD="$QUAY_IO_CREDS_PSW"
-        fi
-    else
-        echo "Using IMAGE_REGISTRY_USER and IMAGE_REGISTRY_PASSWORD secrets for buildah"
-    fi
+    prepare-registry-user-pass $IMAGE_REGISTRY
     buildah login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $IMAGE_REGISTRY
     ERR=$?
     if [ $ERR != 0 ]; then
