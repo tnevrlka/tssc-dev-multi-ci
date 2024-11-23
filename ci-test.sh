@@ -3,6 +3,15 @@ source setup-local-dev-repos.sh
 source init-tas-vars.sh
 eval "$(hack/get-trustification-env.sh)"
 
+# setting secrets for the dev repos is slow
+# after the first setting, you can skip this step
+# warning, if your secrets are stale, do not skip this step
+SKIP_SECRETS=${SKIP_SECRETS:-false}
+
+if [ $SKIP_SECRETS == "true" ]; then
+    echo "WARNING SKIP_SECRETS set to true, skipping configuration of secrets"
+fi
+
 if [ $TEST_REPO_ORG == "redhat-appstudio" ]; then
     echo "Cannot do CI testing using the redhat-appstudio org"
     echo "You must create forks in your own org and set up MY_TEST_REPO_ORG (github) and MY_TEST_REPO_GITLAB_ORG"
@@ -13,6 +22,7 @@ function updateGitAndQuayRefs() {
     if [ -f $1 ]; then
         sed -i "s!quay.io/redhat-appstudio/rhtap-task-runner.*!quay.io/$MY_QUAY_USER/rhtap-task-runner:dev!g" $1
         sed -i "s!https://github.com/redhat-appstudio!https://github.com/$MY_GITHUB_USER!g" $1
+        sed -i "s!RHTAP_Jenkins@main!RHTAP_Jenkins@dev!g" $1
     fi
 }
 
@@ -39,6 +49,12 @@ function updateBuild() {
     updateGitAndQuayRefs $SETUP_ENV
     cat $SETUP_ENV
 }
+
+# create latest images for dev github and gitlab
+make build-push-image
+# update the jenkins library in the dev branch
+bash hack/update-jenkins-library
+
 # Repos on github and gitlab, github and jenkins
 # source repos are updated with the name of the corresponding GITOPS REPO for update-deployment
 updateBuild $BUILD $TEST_GITOPS_REPO
@@ -89,22 +105,30 @@ function updateRepos() {
 # set secrets and then push to repos to ensure pipeline runs are
 # with correct values
 # github
-bash hack/ghub-set-vars $TEST_BUILD_REPO
-bash hack/ghub-set-vars $TEST_GITOPS_REPO
+if [ $SKIP_SECRETS == "false" ]; then
+    bash hack/ghub-set-vars $TEST_BUILD_REPO
+    bash hack/ghub-set-vars $TEST_GITOPS_REPO
+fi
+
 updateRepos $BUILD
 updateRepos $GITOPS
 
 # gitlab
-bash hack/glab-set-vars $(basename $TEST_BUILD_GITLAB_REPO)
-bash hack/glab-set-vars $(basename $TEST_GITOPS_GITLAB_REPO)
+if [ $SKIP_SECRETS == "false" ]; then
+    bash hack/glab-set-vars $(basename $TEST_BUILD_GITLAB_REPO)
+    bash hack/glab-set-vars $(basename $TEST_GITOPS_GITLAB_REPO)
+fi
 updateRepos $GITLAB_BUILD
 updateRepos $GITLAB_GITOPS
 
 # Jenkins
 # note, jenkins secrets are global so set once"
-bash hack/jenkins-set-secrets
+if [ $SKIP_SECRETS == "false" ]; then
+    bash hack/jenkins-set-secrets
+fi
 updateRepos $JENKINS_BUILD
 updateRepos $JENKINS_GITOPS
+bash hack/jenkins-run-pipeline $(basename $TEST_BUILD_JENKINS_REPO)
 
 echo
 echo "Github Build and Gitops Repos"
