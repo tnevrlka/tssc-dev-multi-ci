@@ -13,14 +13,12 @@ env:
   # 🖊️ EDIT to change the image registry settings.
   # Registries such as GHCR, Quay.io, and Docker Hub are supported.
   IMAGE_REGISTRY: ${{ "secrets.IMAGE_REGISTRY" | inCurlies }}
-  IMAGE_REGISTRY_USER: ${{ "secrets.IMAGE_REGISTRY_USER" | inCurlies }}
-  IMAGE_REGISTRY_PASSWORD: ${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}
 {% for secret in gitops_secrets %}
 {%- if secret | eval_if_condition %}
 {%- if secret.comment %}
   # {{ secret.comment }}
 {%- endif %}
-  {{ secret.name }}: ${{ ("secrets." + secret.name) | inCurlies }}
+  {% if secret.commented_out %}# {% endif %}{{ secret.name }}: ${{ ("secrets." + secret.name) | inCurlies }}
 {%- endif %}
 {%- endfor %}
 
@@ -52,11 +50,12 @@ jobs:
           #}
           const secrets = {
             IMAGE_REGISTRY: `${{ "secrets.IMAGE_REGISTRY" | inCurlies }}`,
-            IMAGE_REGISTRY_USER: `${{ "secrets.IMAGE_REGISTRY_USER" | inCurlies }}`,
-            IMAGE_REGISTRY_PASSWORD: `${{ "secrets.IMAGE_REGISTRY_PASSWORD" | inCurlies }}`,
 {% for secret in gitops_secrets %}
 {%- if secret | eval_if_condition %}
-            {{ secret.name }}: `${{ ("secrets." + secret.name) | inCurlies }}`,
+{%- if secret.comment %}
+            /* {{ secret.comment }} */
+{%- endif %}
+            {% if secret.commented_out %}/*{% endif %}{{ secret.name }}: `${{ ("secrets." + secret.name) | inCurlies }}`, {% if secret.commented_out %}*/{% endif %}
 {%- endif %}
 {%- endfor %}
           };
