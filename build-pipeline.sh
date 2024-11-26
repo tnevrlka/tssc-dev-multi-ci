@@ -31,7 +31,7 @@ cp -r rhtap $BUILD/
 # ENV with params
 SETUP_ENV=$BUILD/rhtap/env.sh
 cp rhtap/env.template.sh $SETUP_ENV
-sed -i "s!\${{ values.image }}!quay.io/$MY_QUAY_USER/bootstrap!g" $SETUP_ENV
+sed -i "s!\${{ values.image }}!$IMAGE_TO_BUILD!g" $SETUP_ENV
 sed -i "s!\${{ values.dockerfile }}!Dockerfile!g" $SETUP_ENV
 sed -i "s!\${{ values.buildContext }}!.!g" $SETUP_ENV
 sed -i "s!\${{ values.repoURL }}!$OPTIONAL_REPO_UPDATE!g" $SETUP_ENV
