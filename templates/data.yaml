@@ -20,13 +20,49 @@ build_secrets:
   - name: GITOPS_AUTH_USERNAME
     commented_out: true
     comment: Uncomment this when using Gitlab
+
+  - name: IMAGE_REGISTRY_USER 
+    if: 'isGitHub'
+    comment: "Set this to the user for your specific registry"
+  - name: IMAGE_REGISTRY_PASSWORD 
+    if: 'isGitHub'
+    comment: "Set this password for your specific registry" 
+  - name: IMAGE_REGISTRY_USER
     if: '!isGitHub'
+    commented_out: true
+    comment: "Set this to the user for your specific registry"
+  - name: IMAGE_REGISTRY_PASSWORD
+    if: '!isGitHub'
+    commented_out: true
+    comment: "Set this password for your specific registry" 
+
   - name: QUAY_IO_CREDS
     if: isJenkins
+    comment: "Default registry is set to quay.io" 
   - name: QUAY_IO_CREDS_USR
     if: '!isJenkins'
+    commented_out: true 
   - name: QUAY_IO_CREDS_PSW
+    if: '!isJenkins' 
+    commented_out: true 
+  - name: ARTIFACTORY_IO_CREDS
+    if: isJenkins
+    commented_out: true 
+  - name: ARTIFACTORY_IO_CREDS_USR
     if: '!isJenkins'
+    commented_out: true 
+  - name: ARTIFACTORY_IO_CREDS_PSW
+    if: '!isJenkins'  
+    commented_out: true 
+  - name: NEXUS_IO_CREDS
+    if: isJenkins
+    commented_out: true 
+  - name: NEXUS_IO_CREDS_USR
+    if: '!isJenkins'
+    commented_out: true 
+  - name: NEXUS_IO_CREDS_PSW
+    if: '!isJenkins'  
+    commented_out: true 
   - name: COSIGN_SECRET_PASSWORD
   - name: COSIGN_SECRET_KEY
   - name: COSIGN_PUBLIC_KEY
@@ -49,9 +85,48 @@ gitops_secrets:
   - name: TRUSTIFICATION_SUPPORTED_CYCLONEDX_VERSION
   # If the OCI registry is not public then ec needs some credentials so it can see the attestations.
   # Todo: Use different credentials here so we provide read access only instead of read/write access.
+  # github always uses these 
+  - name: IMAGE_REGISTRY_USER 
+    if: 'isGitHub'
+    comment: "Set this to the user for your specific registry"
+  - name: IMAGE_REGISTRY_PASSWORD 
+    if: 'isGitHub'
+    comment: "Set this password for your specific registry" 
+  # other CIs in transition so comment out and leave Quay.io
+  - name: IMAGE_REGISTRY_USER
+    if: '!isGitHub'
+    commented_out: true
+    comment: "Set this to the user for your specific registry"
+  - name: IMAGE_REGISTRY_PASSWORD
+    if: '!isGitHub'
+    commented_out: true
+    comment: "Set this password for your specific registry" 
+  # show all the values options in the jenkins file and other CIs
+  # this gives users a way to know what to set. Not perfect but better
+  # to be documented 
   - name: QUAY_IO_CREDS
     if: isJenkins
   - name: QUAY_IO_CREDS_USR
     if: '!isJenkins'
+    commented_out: true 
   - name: QUAY_IO_CREDS_PSW
+    if: '!isJenkins' 
+    commented_out: true 
+  - name: ARTIFACTORY_IO_CREDS
+    if: isJenkins
+    commented_out: true 
+  - name: ARTIFACTORY_IO_CREDS_USR
     if: '!isJenkins'
+    commented_out: true 
+  - name: ARTIFACTORY_IO_CREDS_PSW
+    if: '!isJenkins'  
+    commented_out: true 
+  - name: NEXUS_IO_CREDS
+    if: isJenkins
+    commented_out: true 
+  - name: NEXUS_IO_CREDS_USR
+    if: '!isJenkins'
+    commented_out: true 
+  - name: NEXUS_IO_CREDS_PSW
+    if: '!isJenkins'  
+    commented_out: true 
