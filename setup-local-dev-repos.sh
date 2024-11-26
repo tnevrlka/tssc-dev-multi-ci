@@ -102,6 +102,15 @@ GITLAB_GITOPS=$TMP_REPOS/gitlab-gitops
 JENKINS_BUILD=$TMP_REPOS/jenkins-build
 JENKINS_GITOPS=$TMP_REPOS/jenkins-gitops
 
+# Change this for public or private image testing
+export TEST_PRIVATE_REGISTRY=${TEST_PRIVATE_REGISTRY:-true}
+if [[ "$TEST_PRIVATE_REGISTRY" == "true" ]]; then
+    echo "Note, private image being built by ci-test, acs disabled"
+    IMAGE_TO_BUILD=quay.io/$MY_QUAY_USER/private-image
+else
+    IMAGE_TO_BUILD=quay.io/$MY_QUAY_USER/bootstrap
+fi
+
 cloneRepo $UPSTREAM_BUILD_REPO ${TEST_BUILD_REPO_SSH:-$TEST_BUILD_REPO} $TEST_BUILD_REPO $BUILD
 cloneRepo $UPSTREAM_GITOPS_REPO ${TEST_GITOPS_REPO_SSH:-$TEST_GITOPS_REPO} $TEST_GITOPS_REPO $GITOPS
 cloneRepo $UPSTREAM_BUILD_REPO ${TEST_BUILD_GITLAB_REPO_SSH:-$TEST_BUILD_GITLAB_REPO} $TEST_BUILD_GITLAB_REPO $GITLAB_BUILD

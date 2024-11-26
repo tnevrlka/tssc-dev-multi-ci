@@ -32,7 +32,7 @@ function updateBuild() {
     mkdir -p $REPO/rhtap
     SETUP_ENV=$REPO/rhtap/env.sh
     cp rhtap/env.template.sh $SETUP_ENV
-    sed -i "s!\${{ values.image }}!quay.io/$MY_QUAY_USER/bootstrap!g" $SETUP_ENV
+    sed -i "s!\${{ values.image }}!$IMAGE_TO_BUILD!g" $SETUP_ENV
     sed -i "s!\${{ values.dockerfile }}!Dockerfile!g" $SETUP_ENV
     sed -i "s!\${{ values.buildContext }}!.!g" $SETUP_ENV
     sed -i "s!\${{ values.repoURL }}!$GITOPS_REPO_UPDATE!g" $SETUP_ENV
@@ -46,6 +46,13 @@ function updateBuild() {
     echo "export IGNORE_REKOR=$IGNORE_REKOR" >> $SETUP_ENV
     echo "export TUF_MIRROR=$TUF_MIRROR" >> $SETUP_ENV
     echo "# Update forced CI test $(date)" >> $SETUP_ENV
+
+    if [[ "$TEST_PRIVATE_REGISTRY" == "true" ]]; then
+        echo "WARNING Due to private repos, disabling ACS"
+        sed -i '/export DISABLE_ACS=/d' $SETUP_ENV
+        echo "export DISABLE_ACS=true" >> $SETUP_ENV
+    fi
+
     updateGitAndQuayRefs $SETUP_ENV
     cat $SETUP_ENV
 }
