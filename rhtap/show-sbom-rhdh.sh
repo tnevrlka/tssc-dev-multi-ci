@@ -14,6 +14,11 @@ function show-sbom() {
         echo -n "."
         status=0
         echo
+        image_registry="${IMAGE_URL/\/*/}"
+        # If the repo is not publicly accessible we need to authenticate so ec can access it
+        prepare-registry-user-pass $image_registry
+        echo "cosign login to registry $image_registry"
+        cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $image_registry
         echo "SBOM_EYECATCHER_BEGIN"
         cosign download sbom $IMAGE_URL 2>> $RESULTS/err
         status=$?
