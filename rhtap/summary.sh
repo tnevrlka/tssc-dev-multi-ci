@@ -27,8 +27,8 @@ function appstudio-summary() {
 function showTree()  { 
     find $1 | sed -e "s/[^-][^\/]*\// ├─/g" -e "s/|\([^ ]\)/|─\1/"
 }
-function cosignTree() { 
-    $=$1
+function cosignTree() {  
+    URL=$1
     image_registry="${URL/\/*/}"
     # If the repo is not publicly accessible we need to authenticate so ec can access it
     prepare-registry-user-pass $image_registry
