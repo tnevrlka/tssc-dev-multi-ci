@@ -163,12 +163,26 @@ Import the repository into your Jenkins instance as follows:
 4. Fill in your Repository URL, fix the Branch Specifier, save the pipeline
 5. You can now run the pipeline manually
 
-### Gitlab CI
-TO DO
-## Configuring Gitlab CI
+## CI Testing
 
-### Github Action
-TO DO 
-## Configuring Actions
+For ease if testing Jenkins, Gitlab CI and Github Actions, there is a script in  the root called `ci-test.sh`. This script will setup and run the build and promotion pipelines in an automated way.
+The script will perform the following
+
+1. Reset the build and gitops repositories for each of the CI systems to a base source and application sample, these repos are  typically called `tssc-dev-source-{ci-name}` and `tssc-dev-gitops-{ci-name} `. Note github Actions may have a different name due to history.  The ci-test.sh script will print the names of the repos used as well as any manual steps on creating repos (gitlab)
+2. Copy the CI pipelines and env setup for the ci tests into the build and gitops repos. The script can be run with RHTAP connected or not installed.  If running without an RHTAP (usefull for testing build, sbom, ec) the scripts will detect that there is no cluster and will disable ACS, REKOR and TRUSTIFICATION. If you have a running cluster, this can also be accomplished with `oc logout ` for simpler testing.'
+3. Kick off a build on each CI if manually required. 
+4. To get automated pull requests, run `bash hack/wait-for-gitops-update.sh` in a separate window before running the ci-test.sh. It will watch the three gitops repos for updates from build and automatically send a PR to update stage from dev. This can be used to validate a full build/promotion cycle before releasing into the tssc-sample-templates.
+5. You can also run `hack/rhtap-promote --repo repo-url` to trigger a PR for an individual repo. 
+
+### Gitlab CI, Github Action, Jenkins Configuration 
+
+`ci-test` will configure all three CI systems, specifically secrets for your configuration using the following scripts.
+When RHTAP auto-configures the CI systems secrets this will no longer be needed. These scripts could also be useful for customers. 
+See the following scripts 
+```
+hack/ghub-set-vars 
+hack/glab-set-vars  
+hack/jenkins-set-secrets
+```
 
 [rhtap-docs]: https://docs.redhat.com/en/documentation/red_hat_trusted_application_pipeline
