@@ -81,8 +81,8 @@ function createPR() {
         return
     fi
     if grep -q github.com <<< "$REPO"; then
-        git push --set-upstream origin $BRANCH 
-        gh pr create --title "$BRANCH" --body "$TITLE"  -R $REPO
+        git push --set-upstream origin $BRANCH
+        gh pr create --title "$BRANCH" --body "$TITLE" -R $REPO
         return
     fi
 }
