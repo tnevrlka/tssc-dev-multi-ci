@@ -15,7 +15,7 @@ fi
 if [ $USE_RHTAP_IMAGES == "true" ]; then
     echo "USE_RHTAP_IMAGES is set to $USE_RHTAP_IMAGES"
     echo "Note - configuration is going to use the runner images and Jenkins from redhat-appstudio"
-else 
+else
     echo "USE_RHTAP_IMAGES is set to $USE_RHTAP_IMAGES"
     echo "Note - configuration is going to use the runner images#MY_QUAY_USER and Jenkins MY_GITHUB_USER"
 fi
@@ -30,15 +30,15 @@ function updateGitAndQuayRefs() {
     if [ $USE_RHTAP_IMAGES == "true" ]; then
         echo "USE_RHTAP_IMAGES is set to $USE_RHTAP_IMAGES"
         echo "No images or Jenkins references patched"
-    else         
+    else
         echo "USE_RHTAP_IMAGES is set to $USE_RHTAP_IMAGES"
         echo "images or Jenkins references patched to quay.io/$MY_QUAY_USER and github.com/$MY_GITHUB_USER"
         if [ -f $1 ]; then
             sed -i "s!quay.io/redhat-appstudio/rhtap-task-runner.*!quay.io/$MY_QUAY_USER/rhtap-task-runner:dev!g" $1
             sed -i "s!https://github.com/redhat-appstudio!https://github.com/$MY_GITHUB_USER!g" $1
-            sed -i "s!RHTAP_Jenkins@.*'!RHTAP_Jenkins@dev'!g" $1 
+            sed -i "s!RHTAP_Jenkins@.*'!RHTAP_Jenkins@dev'!g" $1
         fi
-    fi 
+    fi
 }
 
 function updateBuild() {
