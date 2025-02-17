@@ -79,7 +79,9 @@ function report() {
 
 function report-json() {
     echo "Running $TASK_NAME:report-json"
+    echo "EC_EYECATCHER_BEGIN"
     cat "$HOMEDIR/report-json.json"
+    echo "EC_EYECATCHER_END"
 }
 
 function summary() {
