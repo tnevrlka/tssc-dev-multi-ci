@@ -6,17 +6,17 @@ FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.23@sha256:ca0c7
 
 WORKDIR /build
 
-COPY . .
+COPY ./tools .
 
 ENV GOBIN=/usr/local/bin/
 
 RUN \
-  cd tools/yq && \
+  cd yq && \
   go install -trimpath --mod=readonly github.com/mikefarah/yq/v4 && \
   yq --version
 
 RUN \
-  cd tools/syft && \
+  cd syft && \
   go install -trimpath --mod=readonly github.com/anchore/syft/cmd/syft && \
   syft version
 
