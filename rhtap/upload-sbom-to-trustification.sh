@@ -188,6 +188,8 @@ for sbom_path in "${sboms_to_upload[@]}"; do
     sbom_id="$(basename -s .json "$sbom_path")"
     supported_version_of_sbom="${sbom_path}.supported_version"
 
+    # Generate TPA_SBOM_URL
+
     echo "Uploading SBOM to $bombastic_api_url (with id=$sbom_id)"
     # https://docs.trustification.dev/trustification/user/bombastic.html#publishing-an-sbom-doc
     curl "${curl_opts[@]}" \
@@ -198,3 +200,9 @@ for sbom_path in "${sboms_to_upload[@]}"; do
         --data "@$supported_version_of_sbom" \
         "$bombastic_api_url/api/v1/sbom?id=$sbom_id"
 done
+
+echo "TPA_SBOM_URL_EYECATCHER_BEGIN"
+jq -n \
+  --arg tpa_sbom_url "$bombastic_api_url/api/v1/sbom?id=$sbom_id" \
+  '{TPA_SBOM_URL: $tpa_sbom_url}'
+echo "TPA_SBOM_URL_EYECATCHER_END"
