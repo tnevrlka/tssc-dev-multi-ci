@@ -46,10 +46,18 @@ get_or_create_vargroup() {
     echo "$group_id"
 }
 
-VARGROUP_ID=$(get_or_create_vargroup "$AZURE_VARIABLE_GROUP_NAME")
-if [[ -z $VARGROUP_ID ]]; then
-    echo "Variable group creation sometimes fails despite succeeding, trying again..." >&2
+for _ in {1..3}; do
     VARGROUP_ID=$(get_or_create_vargroup "$AZURE_VARIABLE_GROUP_NAME")
+    if [[ -n $VARGROUP_ID ]]; then
+        break
+    fi
+
+    echo "Variable group creation sometimes fails despite succeeding, trying again..." >&2
+done
+
+if [[ -z $VARGROUP_ID ]]; then
+    echo "Failed to get the variable group ID" >&2
+    exit 1
 fi
 
 set_var() {
