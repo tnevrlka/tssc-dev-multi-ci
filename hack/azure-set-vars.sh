@@ -1,6 +1,9 @@
 #!/bin/bash
 set -o errexit -o nounset -o pipefail
 
+# Run a script in the azure-cli container to set Azure variables.
+# See the header in hack/_azure-set-vars.sh for more details.
+
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 
 # Find available versions with
