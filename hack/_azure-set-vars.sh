@@ -1,7 +1,16 @@
 #!/bin/bash
 set -o errexit -o pipefail
 
-: "${AZURE_DEVOPS_EXT_PAT:?}"
+# Create a variable group called $AZURE_VARIABLE_GROUP_NAME (if it doesn't exist)
+# and set all the variables needed for the RHTAP pipeline.
+#
+# If you have the Azure CLI (az) installed and don't mind running the commands
+# in this script on your machine, you can execute this script directly. Otherwise,
+# run this in a container via hack/azure-set-vars.sh
+#
+# Before running this script, source your .env or .envrc file.
+
+: "${AZURE_DEVOPS_EXT_PAT:?}" # the 'az' commands use this variable automatically
 : "${AZURE_VARIABLE_GROUP_NAME:?}"
 : "${AZURE_ORGANIZATION:?}"
 : "${AZURE_PROJECT:?}"
@@ -37,10 +46,18 @@ get_or_create_vargroup() {
     echo "$group_id"
 }
 
-VARGROUP_ID=$(get_or_create_vargroup "$AZURE_VARIABLE_GROUP_NAME")
-if [[ -z $VARGROUP_ID ]]; then
-    echo "Variable group creation sometimes fails despite succeeding, trying again..." >&2
+for _ in {1..3}; do
     VARGROUP_ID=$(get_or_create_vargroup "$AZURE_VARIABLE_GROUP_NAME")
+    if [[ -n $VARGROUP_ID ]]; then
+        break
+    fi
+
+    echo "Variable group creation sometimes fails despite succeeding, trying again..." >&2
+done
+
+if [[ -z $VARGROUP_ID ]]; then
+    echo "Failed to get the variable group ID" >&2
+    exit 1
 fi
 
 set_var() {
