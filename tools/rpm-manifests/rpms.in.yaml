@@ -1,0 +1,15 @@
+arches:
+  - x86_64
+packages:
+  - which
+  - git-core
+  - jq
+  - python3.11
+  - podman
+  - buildah
+  - podman
+  - fuse-overlayfs
+  - findutils
+contentOrigin:
+  repofiles:
+    - ./ubi.repo
