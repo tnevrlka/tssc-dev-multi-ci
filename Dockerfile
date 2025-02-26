@@ -22,6 +22,20 @@ RUN \
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5@sha256:66b99214cb9733e77c4a12cc3e3cbbe76769a213f4e2767f170a4f0fdf9db490
 
+# required per https://github.com/release-engineering/rhtap-ec-policy/blob/main/data/rule_data.yml
+LABEL com.redhat.component="rhtap-task-runner"
+LABEL name="rhtap-task-runner"
+LABEL version="1.5.0"
+LABEL release="1"
+LABEL summary="RHTAP Task Runner"
+LABEL description="A collection of CLI tools and scripts needed for RHTAP pipelines"
+LABEL io.k8s.display-name="RHTAP Task Runner"
+LABEL io.k8s.description="A collection of CLI tools and scripts needed for RHTAP pipelines"
+LABEL vendor="Red Hat, Inc."
+LABEL url="https://github.com/redhat-appstudio/tssc-dev-multi-ci"
+LABEL distribution-scope="public"
+LABEL io.openshift.tags=""
+
 RUN \
   microdnf upgrade --assumeyes --nodocs --setopt=keepcache=0 --refresh && \
   microdnf -y --nodocs --setopt=keepcache=0 install which git-core jq python3.11 podman buildah podman fuse-overlayfs findutils && \
