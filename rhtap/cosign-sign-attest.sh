@@ -70,7 +70,7 @@ function cosign-cmd() {
 }
 
 # Generates data for an attestation predicate
-# (CI_TYPE is expected to be one of: jenkins, gitlab, github)
+# (CI_TYPE is expected to be one of: jenkins, gitlab, github, azure)
 function create-att-predicate() {
     source "$SCRIPTDIR/att-predicate-$CI_TYPE.sh"
 }
