@@ -47,6 +47,10 @@ def cosign_sign_attest( ) {
     run_script ('cosign-sign-attest.sh')
 }
 
+def update_deployment( ) {
+    run_script ('update-deployment.sh')
+}
+
 def acs_deploy_check( ) {
     run_script ('acs-deploy-check.sh')
 }
@@ -57,10 +61,6 @@ def acs_image_check( ) {
 
 def acs_image_scan( ) {
     run_script ('acs-image-scan.sh')
-}
-
-def update_deployment( ) {
-    run_script ('update-deployment.sh')
 }
 
 def show_sbom_rhdh( ) {

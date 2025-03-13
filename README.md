@@ -4,7 +4,7 @@
 This repository contains the innerloop development environment for the Multi-CI translations from the RHTAP Pipelines. This repository can also be directly tested in the CI system as it includes a copy of a sample source app for RHTAP (node.js) as well as a gitops repo for that deployment. This may be moved to a separate repo in future dev mode builds.
 
 
- This repo includes Jenkins, Gitlab and Github Actions tests of the scripts
+This repo includes Jenkins, Gitlab and Github Actions tests of the scripts
 
 The tasks appear in the `rhtap` directory and are updated manually. Once updated they can be tested locally in the shell or pushed to the appropriate CI system and tested in that CI.
 
