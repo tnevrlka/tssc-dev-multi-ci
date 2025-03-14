@@ -6,3 +6,4 @@ render/node_modules/
 .env
 .envrc
 bin/shfmt
+.idea/**
