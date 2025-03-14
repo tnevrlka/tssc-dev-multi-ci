@@ -22,6 +22,16 @@ function initialize-tuf() {
     fi
 }
 
+function login() {
+    echo "Running $TASK_NAME:login"
+
+    IMAGES=$(cat $BASE_RESULTS/gather-deploy-images/IMAGES_TO_VERIFY)
+    # Assume the oci registry is the same for each component
+    local first_image_ref=$(jq -r '.components[0].containerImage' <<< "$IMAGES")
+    # If the repo is not publicly accessible we need to authenticate so ec can access it
+    registry-login "$first_image_ref"
+}
+
 function validate() {
     echo "Running $TASK_NAME:validate"
 
@@ -40,15 +50,6 @@ function validate() {
     fi
 
     PUBLIC_KEY=$(base64 -d <<< "$COSIGN_PUBLIC_KEY")
-
-    # Assume the oci registry is the same for each component
-    local first_image_ref=$(jq -r '.components[0].containerImage' <<< "$IMAGES")
-    # Strip off everything after the first / char. It's likely $image_registry will be "quay.io"
-    local image_registry="${first_image_ref/\/*/}"
-    # If the repo is not publicly accessible we need to authenticate so ec can access it
-    prepare-registry-user-pass $image_registry
-    echo "cosign login to registry $image_registry"
-    cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $image_registry
 
     ec validate image \
         "--images" \
@@ -99,6 +100,7 @@ function assert() {
 # Task Steps
 version
 initialize-tuf
+login
 validate
 report
 report-json

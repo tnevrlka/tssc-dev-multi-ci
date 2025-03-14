@@ -4,6 +4,12 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 # show-sbom-rhdh
 source $SCRIPTDIR/common.sh
 
+function login() {
+    echo "Running $TASK_NAME:show-sbom"
+    # If the repo is not publicly accessible we need to authenticate so ec can access it
+    registry-login "${IMAGE_URL}"
+}
+
 function show-sbom() {
     echo "Running $TASK_NAME:show-sbom"
     #!/bin/bash
@@ -14,11 +20,7 @@ function show-sbom() {
         echo -n "."
         status=0
         echo
-        image_registry="${IMAGE_URL/\/*/}"
-        # If the repo is not publicly accessible we need to authenticate so ec can access it
-        prepare-registry-user-pass $image_registry
-        echo "cosign login to registry $image_registry"
-        cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $image_registry
+
         echo "SBOM_EYECATCHER_BEGIN"
         cosign download sbom $IMAGE_URL 2>> $RESULTS/err
         status=$?
@@ -42,5 +44,6 @@ function show-sbom() {
 }
 
 # Task Steps
+login
 show-sbom
 exit_with_success_result

@@ -121,11 +121,8 @@ fi
 jq -r '.components[].containerImage' <<< "$IMAGES" | while read -r image; do
     echo "Getting attestation for $image"
 
-    image_registry="${image/\/*/}"
     # If the repo is not publicly accessible we need to authenticate so ec can access it
-    prepare-registry-user-pass $image_registry
-    echo "cosign login to registry $image_registry"
-    cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $image_registry
+    registry-login "${image}"
 
     mkdir -p "$WORKDIR/$image"
     cosign_verify_multiple_attestation_types \

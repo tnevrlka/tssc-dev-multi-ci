@@ -16,24 +16,6 @@ function full-image-ref() {
     echo "$url@$digest"
 }
 
-# For example quay.io
-function image-registry() {
-    local url=$(cat $BASE_RESULTS/buildah-rhtap/IMAGE_URL)
-    echo "${url/\/*/}"
-}
-
-# Cosign can use the same credentials as buildah
-function cosign-login() {
-    local image_registry="$(image-registry)"
-    prepare-registry-user-pass $image_registry
-    cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" "$image_registry"
-    ERR=$?
-    if [ $ERR != 0 ]; then
-        echo "Failed cosign login $image_registry for user $IMAGE_REGISTRY_USER"
-        exit $ERR
-    fi
-}
-
 # A wrapper for running cosign used for both sign and attest.
 # Handles the password, the key, the rekor options, etc.
 function cosign-cmd() {
@@ -75,12 +57,18 @@ function create-att-predicate() {
     source "$SCRIPTDIR/att-predicate-$CI_TYPE.sh"
 }
 
+# Login to registry using cosign.
+function login() {
+    echo "Running $TASK_NAME:login"
+    local url=$(cat $BASE_RESULTS/buildah-rhtap/IMAGE_URL)
+    registry-login "${url}"
+}
+
 # Sign the image using cosign.
 # Signing secret key and password should be base64 encoded in environment
 # vars COSIGN_SECRET_PASSWORD and COSIGN_SECRET_KEY.
 function sign() {
     echo "Running $TASK_NAME:sign"
-    cosign-login
     cosign-cmd sign
 }
 
@@ -108,6 +96,7 @@ function show-public-key() {
 }
 
 # Task Steps
+login
 sign
 attest
 show-rekor-url

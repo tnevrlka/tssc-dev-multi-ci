@@ -29,11 +29,8 @@ function showTree() {
 }
 function cosignTree() {
     URL=$1
-    image_registry="${URL/\/*/}"
     # If the repo is not publicly accessible we need to authenticate so ec can access it
-    prepare-registry-user-pass $image_registry
-    echo "cosign login to registry $image_registry"
-    cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $image_registry
+    registry-login "${URL}"
     cosign tree $URL
 }
 

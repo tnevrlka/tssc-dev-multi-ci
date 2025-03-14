@@ -5,9 +5,8 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 # buildah-rhtap
 source $SCRIPTDIR/common.sh
 
-function build() {
-    echo "Running $TASK_NAME:build"
-    echo "Running Login"
+function login() {
+    echo "Running $TASK_NAME:login"
     IMAGE_REGISTRY="${IMAGE%%/*}"
     prepare-registry-user-pass $IMAGE_REGISTRY
     buildah login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $IMAGE_REGISTRY
@@ -16,6 +15,10 @@ function build() {
         echo "Failed buildah login $IMAGE_REGISTRY for user $IMAGE_REGISTRY_USER "
         exit $ERR
     fi
+}
+
+function build() {
+    echo "Running $TASK_NAME:build"
 
     # Check if the Dockerfile exists
     SOURCE_CODE_DIR=.
@@ -69,18 +72,15 @@ function generate-sboms() {
 
 function upload-sbom() {
     echo "Running $TASK_NAME:upload-sbom"
-    cosign login --username="$IMAGE_REGISTRY_USER" --password="$IMAGE_REGISTRY_PASSWORD" $IMAGE_REGISTRY
-    ERR=$?
-    if [ $ERR != 0 ]; then
-        echo "Failed cosign login $IMAGE_REGISTRY for user $IMAGE_REGISTRY_USER"
-        exit $ERR
-    fi
     cosign attach sbom --sbom $TEMP_DIR/files/sbom-cyclonedx.json --type cyclonedx "$IMAGE"
 }
 function delim() {
     printf '=%.0s' {1..8}
 }
 # Task Steps
+delim
+login
+delim
 build
 delim
 generate-sboms
