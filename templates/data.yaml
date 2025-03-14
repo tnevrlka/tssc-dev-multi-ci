@@ -4,11 +4,11 @@ build_steps:
     substeps: [init]
   - name: build
     substeps: [buildah-rhtap, cosign-sign-attest]
+  - name: deploy
+    substeps: [update-deployment]
   - name: scan
     substeps: [acs-deploy-check, acs-image-check, acs-image-scan]
     concurrent: true
-  - name: deploy
-    substeps: [update-deployment]
   - name: summary
     substeps: [show-sbom-rhdh, summary]
     concurrent: true
