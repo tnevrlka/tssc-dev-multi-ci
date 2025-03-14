@@ -1,3 +1,5 @@
+set -euo pipefail
+
 # get local test repos to patch
 source setup-local-dev-repos.sh
 source init-tas-vars.sh
