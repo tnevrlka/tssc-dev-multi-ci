@@ -32,7 +32,7 @@ runDetails:
       jobUrl: "${JOB_URL}"
 
   metadata:
-    invocationID: "${BUILD_TAG}"
+    invocationId: "${BUILD_TAG}"
     startedOn: "$(cat $BASE_RESULTS/init/START_TIME)"
     # Inaccurate, but maybe close enough
     finishedOn: "$(timestamp)"

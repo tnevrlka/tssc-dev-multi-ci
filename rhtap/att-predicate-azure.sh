@@ -22,7 +22,7 @@ runDetails:
     id: "${AGENT_ID}"
 
   metadata:
-    invocationID: "${BUILD_BUILDURI}"
+    invocationId: "${BUILD_BUILDURI}"
     startedOn: "$(cat $BASE_RESULTS/init/START_TIME)"
     finishedOn: "$(timestamp)"
 
