@@ -49,6 +49,22 @@ prepare-registry-user-pass() {
     fi
 }
 
+# Performs an image registry login. It takes a single parameter which could be either an image
+# registry, e.g. quay.io, or a full image reference, e.g. quay.io/spam/bacon:crispy.
+function registry-login() {
+    local image_ref="$1"
+    local image_registry="${image_ref/\/*/}"
+    prepare-registry-user-pass "${image_registry}"
+    # There are different tools that we can use to login to a registry. Here we choose to use cosign
+    # because it's commonly used across the different tasks.
+    cosign login --username="${IMAGE_REGISTRY_USER}" --password="${IMAGE_REGISTRY_PASSWORD}" "${image_registry}"
+    ERR=$?
+    if [ $ERR != 0 ]; then
+        echo "Failed registry login ${image_registry} for user ${IMAGE_REGISTRY_USER}"
+        exit $ERR
+    fi
+}
+
 DIR=$(pwd)
 export TASK_NAME=$(basename $0 .sh)
 export BASE_RESULTS=$DIR/results
