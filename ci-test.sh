@@ -1,9 +1,21 @@
-set -euo pipefail
+set -eo pipefail
+
+set -x
 
 # get local test repos to patch
 source setup-local-dev-repos.sh
 source init-tas-vars.sh
 eval "$(hack/get-trustification-env.sh)"
+
+# sed behaves differently on macOS and Linux
+SED_CMD () {
+  if sed --version >/dev/null 2>&1
+  then
+    sed -i -- "$@"
+  else
+    sed -i "" "$@"
+  fi
+}
 
 # setting secrets for the dev repos is slow
 # after the first setting, you can skip this step
@@ -36,9 +48,9 @@ function updateGitAndQuayRefs() {
         echo "USE_RHTAP_IMAGES is set to $USE_RHTAP_IMAGES"
         echo "images or Jenkins references patched to quay.io/$MY_QUAY_USER and github.com/$MY_GITHUB_USER"
         if [ -f "$1" ]; then
-            sed -i "s!quay.io/redhat-appstudio/rhtap-task-runner.*!quay.io/$MY_QUAY_USER/rhtap-task-runner:dev!g" "$1"
-            sed -i "s!https://github.com/redhat-appstudio!https://github.com/$MY_GITHUB_USER!g" "$1"
-            sed -i "s!RHTAP_Jenkins@.*'!RHTAP_Jenkins@dev'!g" "$1"
+            SED_CMD "s!quay.io/redhat-appstudio/rhtap-task-runner.*!quay.io/$MY_QUAY_USER/rhtap-task-runner:dev!g" "$1"
+            SED_CMD "s!https://github.com/redhat-appstudio!https://github.com/$MY_GITHUB_USER!g" "$1"
+            SED_CMD "s!RHTAP_Jenkins@.*'!RHTAP_Jenkins@dev'!g" "$1"
         fi
     fi
 }
@@ -49,14 +61,14 @@ function updateBuild() {
     mkdir -p "$REPO/rhtap"
     SETUP_ENV=$REPO/rhtap/env.sh
     cp rhtap/env.template.sh "$SETUP_ENV"
-    sed -i "s!\${{ values.image }}!$IMAGE_TO_BUILD!g" "$SETUP_ENV"
-    sed -i "s!\${{ values.dockerfile }}!Dockerfile!g" "$SETUP_ENV"
-    sed -i "s!\${{ values.buildContext }}!.!g" "$SETUP_ENV"
-    sed -i "s!\${{ values.repoURL }}!$GITOPS_REPO_UPDATE!g" "$SETUP_ENV"
+    SED_CMD "s!\${{ values.image }}!$IMAGE_TO_BUILD!g" "$SETUP_ENV"
+    SED_CMD "s!\${{ values.dockerfile }}!Dockerfile!g" "$SETUP_ENV"
+    SED_CMD "s!\${{ values.buildContext }}!.!g" "$SETUP_ENV"
+    SED_CMD "s!\${{ values.repoURL }}!$GITOPS_REPO_UPDATE!g" "$SETUP_ENV"
     # Update REKOR_HOST and TUF_MIRROR values directly
-    sed -i '/export REKOR_HOST=/d' "$SETUP_ENV"
-    sed -i '/export TUF_MIRROR=/d' "$SETUP_ENV"
-    sed -i '/export IGNORE_REKOR=/d' "$SETUP_ENV"
+    SED_CMD '/export REKOR_HOST=/d' "$SETUP_ENV"
+    SED_CMD '/export TUF_MIRROR=/d' "$SETUP_ENV"
+    SED_CMD '/export IGNORE_REKOR=/d' "$SETUP_ENV"
 
     {
       echo ""
@@ -68,7 +80,7 @@ function updateBuild() {
 
     if [[ "$TEST_PRIVATE_REGISTRY" == "true" ]]; then
         echo "WARNING Due to private repos, disabling ACS"
-        sed -i '/export DISABLE_ACS=/d' "$SETUP_ENV"
+        SED_CMD '/export DISABLE_ACS=/d' "$SETUP_ENV"
         echo "export DISABLE_ACS=true" >> "$SETUP_ENV"
     fi
 
