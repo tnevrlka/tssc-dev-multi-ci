@@ -1,5 +1,7 @@
 # Generated from templates/source-repo/build-and-update-gitops.yml.njk. Do not edit directly.
 
+# hello world, this is a test
+
 # 💁 The Gitops Starter workflow will:
 # - Checkout your repository
 # - Perform a TSSC container image build
